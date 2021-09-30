@@ -1,0 +1,40 @@
+name: Tests On Push
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  xcode-tests:
+    name: "Tests"
+    runs-on: macos-11
+    
+    strategy:
+      matrix:
+        platform: [iOS, iPad]
+        include:
+          - platform: iOS
+            sdk: iphonesimulator
+            destination: "name=iPhone 12"
+
+          - platform: iPad
+            sdk: iphonesimulator
+            destination: "name=iPad Air"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Xcodebuild Action
+      uses: sersoft-gmbh/xcodebuild-action@v1
+      with:
+        action: test
+        spm-package: /
+        scheme: CombineExtensions
+        sdk: ${{ matrix.sdk }}
+        destination: "${{ matrix.destination }}"
+        enable-code-coverage: true
+        use-xcpretty: true
+    
+    - name: Upload Coverage to CodeCov
+      uses: codecov/codecov-action@v2
