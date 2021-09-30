@@ -3,7 +3,7 @@ import XCTest
 import Combine
 import CombineExtensions
 
-class PassthroughRelayTests: XCTestCase {
+final class PassthroughRelayTests: XCTestCase {
 
     private var relay: PassthroughRelay<String>?
     private var values = [String]()

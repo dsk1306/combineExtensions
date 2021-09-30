@@ -3,7 +3,7 @@ import XCTest
 import Combine
 import CombineExtensions
 
-class CurrentValueRelayTests: XCTestCase {
+final class CurrentValueRelayTests: XCTestCase {
 
     private var relay: CurrentValueRelay<String>?
     private var values = [String]()
