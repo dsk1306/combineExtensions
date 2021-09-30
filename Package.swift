@@ -17,10 +17,14 @@ let package = Package(
         )
     ],
     targets: [
-        .target(name: "CombineExtensions"),
+        .target(
+            name: "CombineExtensions",
+            path: "Sources"
+        ),
         .testTarget(
             name: "CombineExtensionsTests",
-            dependencies: ["CombineExtensions"]
+            dependencies: ["CombineExtensions"],
+            path: "Tests"
         )
     ]
 )
