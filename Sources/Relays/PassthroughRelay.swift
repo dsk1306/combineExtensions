@@ -7,7 +7,7 @@ import Combine
 public class PassthroughRelay<Output>: Relay {
 
     private let storage: PassthroughSubject<Output, Never>
-    private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]
+    private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]()
 
     /// Create a new relay.
     public init() {
@@ -78,7 +78,7 @@ private extension PassthroughRelay {
 
 private extension PassthroughRelay {
 
-    class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExt.Sink<Upstream, Downstream> {
+    class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
 
         var shouldForwardCompletion = false
 
