@@ -3,6 +3,13 @@ import PackageDescription
 
 let package = Package(
     name: "CombineExtensions",
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .macCatalyst(.v13),
+        .tvOS(.v13),
+        .watchOS(.v6)
+    ],
     products: [
         .library(
             name: "CombineExtensions",
@@ -10,10 +17,14 @@ let package = Package(
         )
     ],
     targets: [
-        .target(name: "CombineExtensions"),
+        .target(
+            name: "CombineExtensions",
+            path: "Sources"
+        ),
         .testTarget(
             name: "CombineExtensionsTests",
-            dependencies: ["CombineExtensions"]
+            dependencies: ["CombineExtensions"],
+            path: "Tests"
         )
     ]
 )
