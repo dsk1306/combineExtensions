@@ -34,7 +34,7 @@ jobs:
       uses: sersoft-gmbh/xcodebuild-action@v1
       with:
         action: test
-        spm-package: /
+        spm-package: combineExtensions
         scheme: CombineExtensions
         sdk: ${{ matrix.sdk }}
         destination: "${{ matrix.destination }}"
