@@ -15,7 +15,7 @@ class PassthroughRelayTests: XCTestCase {
         values = []
     }
 
-    func testFinishesOnDeinit() {
+    func test_finishesOnDeinit() {
         var completed = false
         relay?
             .sink(receiveCompletion: { _ in completed = true },
@@ -27,7 +27,7 @@ class PassthroughRelayTests: XCTestCase {
         XCTAssertTrue(completed)
     }
 
-    func testNoReplay() {
+    func test_noReplay() {
         relay?.accept("these")
         relay?.accept("values")
         relay?.accept("shouldnt")
@@ -51,7 +51,7 @@ class PassthroughRelayTests: XCTestCase {
         XCTAssertNil(secondInitial)
     }
 
-    func testVoidAccept() {
+    func test_voidAccept() {
         let voidRelay = PassthroughRelay<Void>()
         var count = 0
 
@@ -68,7 +68,7 @@ class PassthroughRelayTests: XCTestCase {
         XCTAssertEqual(count, 5)
     }
 
-    func testSubscribePublisher() {
+    func test_subscribePublisher() {
         var completed = false
         relay?
             .sink(receiveCompletion: { _ in completed = true },
@@ -84,7 +84,7 @@ class PassthroughRelayTests: XCTestCase {
         XCTAssertEqual(values, ["1", "2", "3"])
     }
 
-    func testSubscribeRelay_Passthroughs() {
+    func test_subscribeRelay_passthroughs() {
         var completed = false
 
         let input = PassthroughRelay<String>()
@@ -94,8 +94,10 @@ class PassthroughRelayTests: XCTestCase {
             .subscribe(output)
             .store(in: &subscriptions)
         output
-            .sink(receiveCompletion: { _ in completed = true },
-                  receiveValue: { self.values.append($0) })
+            .sink(
+                receiveCompletion: { _ in completed = true },
+                receiveValue: { self.values.append($0) }
+            )
             .store(in: &subscriptions)
 
         input.accept("1")
@@ -106,7 +108,7 @@ class PassthroughRelayTests: XCTestCase {
         XCTAssertEqual(values, ["1", "2", "3"])
     }
 
-    func testSubscribeRelay_CurrentValueToPassthrough() {
+    func test_subscribeRelay_currentValueToPassthrough() {
         var completed = false
 
         let input = CurrentValueRelay<String>("initial")
@@ -116,8 +118,10 @@ class PassthroughRelayTests: XCTestCase {
             .subscribe(output)
             .store(in: &subscriptions)
         output
-            .sink(receiveCompletion: { _ in completed = true },
-                  receiveValue: { self.values.append($0) })
+            .sink(
+                receiveCompletion: { _ in completed = true },
+                receiveValue: { self.values.append($0) }
+            )
             .store(in: &subscriptions)
 
         input.accept("1")

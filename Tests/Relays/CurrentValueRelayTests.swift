@@ -31,12 +31,13 @@ class CurrentValueRelayTests: XCTestCase {
         var completed = false
 
         relay?
-            .sink(receiveCompletion: { _ in completed = true },
-                  receiveValue: { _ in })
+            .sink(
+                receiveCompletion: { _ in completed = true },
+                receiveValue: { _ in }
+            )
             .store(in: &subscriptions)
 
         XCTAssertEqual(relay?.value, "initial")
-
         XCTAssertFalse(completed)
 
         relay = nil
@@ -61,8 +62,10 @@ class CurrentValueRelayTests: XCTestCase {
     func test_subscribePublisher() {
         var completed = false
         relay?
-            .sink(receiveCompletion: { _ in completed = true },
-                  receiveValue: { self.values.append($0) })
+            .sink(
+                receiveCompletion: { _ in completed = true },
+                receiveValue: { self.values.append($0) }
+            )
             .store(in: &subscriptions)
 
         ["1", "2", "3"]
@@ -84,8 +87,10 @@ class CurrentValueRelayTests: XCTestCase {
             .subscribe(output)
             .store(in: &subscriptions)
         output
-            .sink(receiveCompletion: { _ in completed = true },
-                  receiveValue: { self.values.append($0) })
+            .sink(
+                receiveCompletion: { _ in completed = true },
+                receiveValue: { self.values.append($0) }
+            )
             .store(in: &subscriptions)
 
         input.accept("1")
@@ -106,8 +111,10 @@ class CurrentValueRelayTests: XCTestCase {
             .subscribe(output)
             .store(in: &subscriptions)
         output
-            .sink(receiveCompletion: { _ in completed = true },
-                  receiveValue: { self.values.append($0) })
+            .sink(
+                receiveCompletion: { _ in completed = true },
+                receiveValue: { self.values.append($0) }
+            )
             .store(in: &subscriptions)
 
         input.accept("1")

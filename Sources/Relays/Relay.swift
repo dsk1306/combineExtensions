@@ -17,7 +17,6 @@ public protocol Relay: Publisher where Failure == Never {
 
 }
 
-@available(OSX 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 public extension Publisher where Failure == Never {
 
     /// Attaches the specified relay to this publisher.
@@ -29,7 +28,6 @@ public extension Publisher where Failure == Never {
 
 }
 
-@available(OSX 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 public extension Relay where Output == Void {
 
     /// Relay a void to the subscriber.

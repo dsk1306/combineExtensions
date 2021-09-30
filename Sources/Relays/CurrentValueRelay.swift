@@ -4,7 +4,7 @@ import Combine
 /// Unlike its subject-counterpart, it may only accept values, and only sends a finishing event on deallocation.
 /// It cannot send a failure event.
 /// - note: Unlike `PassthroughRelay`, `CurrentValueRelay` maintains a buffer of the most recently published value.
-public class CurrentValueRelay<Output>: Relay {
+public final class CurrentValueRelay<Output>: Relay {
 
     public var value: Output { storage.value }
 
@@ -15,6 +15,11 @@ public class CurrentValueRelay<Output>: Relay {
     /// - parameter value: Initial value for the relay.
     public init(_ value: Output) {
         storage = .init(value)
+    }
+
+    deinit {
+        // Send a finished event upon dealloation.
+        subscriptions.forEach { $0.forceFinish() }
     }
 
     /// Relay a value to downstream subscribers.
@@ -37,16 +42,11 @@ public class CurrentValueRelay<Output>: Relay {
         publisher.subscribe(storage)
     }
 
-    deinit {
-        // Send a finished event upon dealloation.
-        subscriptions.forEach { $0.forceFinish() }
-    }
-
 }
 
 private extension CurrentValueRelay {
 
-    class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
+    final class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
 
         private var sink: Sink<Upstream, Downstream>?
 
@@ -81,7 +81,7 @@ private extension CurrentValueRelay {
 
 private extension CurrentValueRelay {
 
-    class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
+    final class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
 
         var shouldForwardCompletion = false
 

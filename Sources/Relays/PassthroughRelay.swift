@@ -4,7 +4,7 @@ import Combine
 /// Unlike its subject-counterpart, it may only accept values, and only sends a finishing event on deallocation.
 /// It cannot send a failure event.
 /// - note: Unlike CurrentValueRelay, a PassthroughRelay doesn’t have an initial value or a buffer of the most recently-published value.
-public class PassthroughRelay<Output>: Relay {
+public final class PassthroughRelay<Output>: Relay {
 
     private let storage: PassthroughSubject<Output, Never>
     private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]()
@@ -14,8 +14,13 @@ public class PassthroughRelay<Output>: Relay {
         self.storage = .init()
     }
 
-    /// Relay a value to downstream subscribers
-    /// - parameter value: A new value
+    deinit {
+        // Send a finished event upon dealloation.
+        subscriptions.forEach { $0.forceFinish() }
+    }
+
+    /// Relay a value to downstream subscribers.
+    /// - parameter value: A new value.
     public func accept(_ value: Output) {
         storage.send(value)
     }
@@ -34,16 +39,11 @@ public class PassthroughRelay<Output>: Relay {
         publisher.subscribe(storage)
     }
 
-    deinit {
-        // Send a finished event upon dealloation
-        subscriptions.forEach { $0.forceFinish() }
-    }
-
 }
 
 private extension PassthroughRelay {
 
-    class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
+    final class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
 
         private var sink: Sink<Upstream, Downstream>?
 
@@ -78,7 +78,7 @@ private extension PassthroughRelay {
 
 private extension PassthroughRelay {
 
-    class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
+    final class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
 
         var shouldForwardCompletion = false
 
