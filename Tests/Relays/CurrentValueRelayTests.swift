@@ -44,6 +44,23 @@ class CurrentValueRelayTests: XCTestCase {
         XCTAssertTrue(completed)
     }
 
+    func test_voidAccept() {
+        let voidRelay = CurrentValueRelay<Void>(())
+        var count = 0
+
+        voidRelay
+            .sink(receiveValue: { count += 1 })
+            .store(in: &subscriptions)
+
+        voidRelay.accept()
+        voidRelay.accept()
+        voidRelay.accept()
+        voidRelay.accept()
+        voidRelay.accept()
+
+        XCTAssertEqual(count, 6)
+    }
+
     func test_replaysCurrentValue() {
         relay?
             .sink(receiveValue: { self.values.append($0) })
