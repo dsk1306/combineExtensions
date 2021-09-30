@@ -1,7 +1,7 @@
 #if !os(watchOS)
 import XCTest
 import Combine
-import CombineExt
+import CombineExtensions
 
 class CurrentValueRelayTests: XCTestCase {
 
