@@ -19,7 +19,7 @@ jobs:
 
           - platform: iPad
             sdk: iphonesimulator
-            destination: "name=iPad Air"
+            destination: "name=iPad Pro (9.7-inch)"
 
     steps:
     - name: Checkout
