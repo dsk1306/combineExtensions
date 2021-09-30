@@ -9,7 +9,7 @@ public class CurrentValueRelay<Output>: Relay {
     public var value: Output { storage.value }
 
     private let storage: CurrentValueSubject<Output, Never>
-    private var subscriptions = [Subscription<CurrentValueSubject<Output, Never>, AnySubscriber<Output, Never>>]
+    private var subscriptions = [Subscription<CurrentValueSubject<Output, Never>, AnySubscriber<Output, Never>>]()
 
     /// Create a new relay.
     /// - parameter value: Initial value for the relay.
@@ -81,7 +81,7 @@ private extension CurrentValueRelay {
 
 private extension CurrentValueRelay {
 
-    class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExt.Sink<Upstream, Downstream> {
+    class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
 
         var shouldForwardCompletion = false
 
