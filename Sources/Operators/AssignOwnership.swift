@@ -4,11 +4,11 @@ public extension Publisher where Self.Failure == Never {
     
     /// Assigns a publisher’s output to a property of an object.
     /// - Parameters:
-    /// - keyPath: A key path that indicates the property to assign.
-    /// - object: The object that contains the property.
-    ///           The subscriber assigns the object’s property every time it receives a new value.
-    /// - ownership: The retainment / ownership strategy for the object.
-    ///              The default value is `strong`.
+    ///   - keyPath: A key path that indicates the property to assign.
+    ///   - object: The object that contains the property.
+    ///             The subscriber assigns the object’s property every time it receives a new value.
+    ///   - ownership: The retainment / ownership strategy for the object.
+    ///                The default value is `strong`.
     /// - Returns:
     /// An `AnyCancellable` instance.
     /// Call `cancel()` on this instance when you no longer want the publisher to automatically assign the property.
@@ -32,12 +32,12 @@ public extension Publisher where Self.Failure == Never {
     
     /// Assigns each element from a Publisher to properties of the provided objects.
     /// - Parameters:
-    /// - keyPath1: The key path of the first property to assign.
-    /// - object1: The first object on which to assign the value.
-    /// - keyPath2: The key path of the second property to assign.
-    /// - object2: The second object on which to assign the value.
-    /// - ownership: The retainment / ownership strategy for the object.
-    ///              The default value is `strong`.
+    ///   - keyPath1: The key path of the first property to assign.
+    ///   - object1: The first object on which to assign the value.
+    ///   - keyPath2: The key path of the second property to assign.
+    ///   - object2: The second object on which to assign the value.
+    ///   - ownership: The retainment / ownership strategy for the object.
+    ///                The default value is `strong`.
     /// - Returns:
     /// A cancellable instance; used when you end assignment of the received value.
     /// Deallocation of the result will tear down the subscription stream.
@@ -64,14 +64,14 @@ public extension Publisher where Self.Failure == Never {
     
     /// Assigns each element from a Publisher to properties of the provided objects.
     /// - Parameters:
-    /// - keyPath1: The key path of the first property to assign.
-    /// - object1: The first object on which to assign the value.
-    /// - keyPath2: The key path of the second property to assign.
-    /// - object2: The second object on which to assign the value.
-    /// - keyPath3: The key path of the third property to assign.
-    /// - object3: The third object on which to assign the value.
-    /// - ownership: The retainment / ownership strategy for the object.
-    ///              The default value is `strong`.
+    ///   - keyPath1: The key path of the first property to assign.
+    ///   - object1: The first object on which to assign the value.
+    ///   - keyPath2: The key path of the second property to assign.
+    ///   - object2: The second object on which to assign the value.
+    ///   - keyPath3: The key path of the third property to assign.
+    ///   - object3: The third object on which to assign the value.
+    ///   - ownership: The retainment / ownership strategy for the object.
+    ///                The default value is `strong`.
     /// - Returns:
     /// A cancellable instance; used when you end assignment of the received value.
     /// Deallocation of the result will tear down the subscription stream.
