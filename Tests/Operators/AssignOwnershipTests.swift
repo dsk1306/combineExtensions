@@ -27,17 +27,20 @@ final class AssignOwnershipTests: XCTestCase {
         subscription = subject
             .assign(to: \.value1, on: self, ownership: .weak)
         subject.send(10)
-        XCTAssertEqual(initialRetainCount, CFGetRetainCount(self))
+        let resultRetainCount1 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount, resultRetainCount1)
 
         subscription = subject
             .assign(to: \.value1, on: self, and: \.value2, on: self, ownership: .weak)
         subject.send(15)
-        XCTAssertEqual(initialRetainCount, CFGetRetainCount(self))
+        let resultRetainCount2 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount, resultRetainCount2)
 
         subscription = subject
             .assign(to: \.value1, on: self, and: \.value2, on: self, and: \.value3, on: self, ownership: .weak)
         subject.send(20)
-        XCTAssertEqual(initialRetainCount, CFGetRetainCount(self))
+        let resultRetainCount3 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount, resultRetainCount3)
     }
 
     func test_unownedOwnership() {
@@ -46,17 +49,20 @@ final class AssignOwnershipTests: XCTestCase {
         subscription = subject
             .assign(to: \.value1, on: self, ownership: .unowned)
         subject.send(10)
-        XCTAssertEqual(initialRetainCount, CFGetRetainCount(self))
+        let resultRetainCount1 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount, resultRetainCount1)
 
         subscription = subject
             .assign(to: \.value1, on: self, and: \.value2, on: self, ownership: .unowned)
         subject.send(15)
-        XCTAssertEqual(initialRetainCount, CFGetRetainCount(self))
+        let resultRetainCount2 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount, resultRetainCount2)
 
         subscription = subject
             .assign(to: \.value1, on: self, and: \.value2, on: self, and: \.value3, on: self, ownership: .unowned)
         subject.send(20)
-        XCTAssertEqual(initialRetainCount, CFGetRetainCount(self))
+        let resultRetainCount3 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount, resultRetainCount3)
     }
 
     func test_strongOwnership() {
@@ -65,17 +71,20 @@ final class AssignOwnershipTests: XCTestCase {
         subscription = subject
             .assign(to: \.value1, on: self, ownership: .strong)
         subject.send(10)
-        XCTAssertEqual(initialRetainCount + 1, CFGetRetainCount(self))
+        let resultRetainCount1 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount + 1, resultRetainCount1)
 
         subscription = subject
             .assign(to: \.value1, on: self, and: \.value2, on: self, ownership: .strong)
         subject.send(15)
-        XCTAssertEqual(initialRetainCount + 2, CFGetRetainCount(self))
+        let resultRetainCount2 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount + 2, resultRetainCount2)
 
         subscription = subject
             .assign(to: \.value1, on: self, and: \.value2, on: self, and: \.value3, on: self, ownership: .strong)
         subject.send(20)
-        XCTAssertEqual(initialRetainCount + 3, CFGetRetainCount(self))
+        let resultRetainCount3 = CFGetRetainCount(self)
+        XCTAssertEqual(initialRetainCount + 3, resultRetainCount3)
     }
 
 }
