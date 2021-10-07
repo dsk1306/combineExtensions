@@ -5,15 +5,21 @@ import CombineExtensions
 
 final class PassthroughRelayTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var relay: PassthroughRelay<String>?
     private var values = [String]()
     private var subscriptions = Set<AnyCancellable>()
+
+    // MARK: - Base Class
 
     override func setUp() {
         relay = PassthroughRelay<String>()
         subscriptions = .init()
         values = []
     }
+
+    // MARK: - Tests
 
     func test_finishesOnDeinit() {
         var completed = false

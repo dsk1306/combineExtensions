@@ -5,9 +5,13 @@ import CombineExtensions
 
 final class CurrentValueRelayTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var relay: CurrentValueRelay<String>?
     private var values = [String]()
     private var subscriptions = Set<AnyCancellable>()
+
+    // MARK: - Base Class
 
     override func setUp() {
         super.setUp()
@@ -16,6 +20,8 @@ final class CurrentValueRelayTests: XCTestCase {
         subscriptions = .init()
         values = []
     }
+
+    // MARK: - Tests
 
     func test_valueGetter() {
         XCTAssertEqual(relay?.value, "initial")

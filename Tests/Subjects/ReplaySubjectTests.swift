@@ -5,8 +5,12 @@ import XCTest
 
 final class ReplaySubjectTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var demandSubscription: Subscription!
     private var subscriptions = Set<AnyCancellable>()
+
+    // MARK: - Tests
 
     func test_replaysNoValues() {
         let subject = ReplaySubject<Int, Never>(bufferSize: 1)

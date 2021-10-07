@@ -5,11 +5,15 @@ import CombineExtensions
 
 final class CreateTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var cancelable: Cancellable?
     private var completion: Subscribers.Completion<CreateTests.MyError>?
     private var values = [String]()
     private var canceled = false
     private let allValues = ["Hello", "World", "What's", "Up?"]
+
+    // MARK: - Base Class
 
     override func setUp() {
         canceled = false
@@ -17,6 +21,8 @@ final class CreateTests: XCTestCase {
         completion = nil
         cancelable = nil
     }
+
+    // MARK: - Tests
 
     func test_finished_unlimitedDemand() {
         let subscriber = makeSubscriber(demand: .unlimited)

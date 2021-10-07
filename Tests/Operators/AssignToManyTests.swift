@@ -5,7 +5,11 @@ import CombineExtensions
 
 final class AssignToManyTests: XCTestCase {
 
+    // MARK: - Properties
+
     var subscription: AnyCancellable!
+
+    // MARK: - Tests
 
     func test_assignToOne() {
         let source = PassthroughSubject<Int, Never>()
@@ -90,7 +94,7 @@ final class AssignToManyTests: XCTestCase {
 
 }
 
-// MARK: - Private Helpers
+// MARK: - Fakes
 
 private class Fake1<T> {
 
