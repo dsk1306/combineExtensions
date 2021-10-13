@@ -5,7 +5,11 @@ import XCTest
 
 final class ShareReplayTests: XCTestCase {
 
+    // MARK: - Properties
+
     private var subscriptions = Set<AnyCancellable>()
+
+    // MARK: - Tests
 
     func test_sharing_noReplay() {
         var subscribeCount = 0

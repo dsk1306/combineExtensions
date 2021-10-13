@@ -5,11 +5,15 @@ import CombineExtensions
 
 final class AssignOwnershipTests: XCTestCase {
 
+    // MARK: - Properties
+
     var subscription: AnyCancellable!
     var value1 = 0
     var value2 = 0
     var value3 = 0
     var subject: PassthroughSubject<Int, Never>!
+
+    // MARK: - Base Class
 
     override func setUp() {
         super.setUp()
@@ -20,6 +24,8 @@ final class AssignOwnershipTests: XCTestCase {
         value2 = 0
         value3 = 0
     }
+
+    // MARK: - Tests
 
     func test_weakOwnership() {
         let initialRetainCount = CFGetRetainCount(self)

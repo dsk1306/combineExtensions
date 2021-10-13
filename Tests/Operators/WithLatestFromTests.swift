@@ -5,11 +5,15 @@ import CombineExtensions
 
 final class WithLatestFromTests: XCTestCase {
 
+    // MARK: - Properties
+
     var subscription: AnyCancellable!
 
     // We have to hold a reference to the subscription or the
     // publisher will get deallocated and canceled
     var demandSubscription: Subscription!
+
+    // MARK: - Tests
 
     func test_withResultSelector_passthroughSubject() {
         let subject1 = PassthroughSubject<Int, Never>()
