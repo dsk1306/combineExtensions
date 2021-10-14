@@ -7,6 +7,8 @@ final public class CombineCancellable {
 
     private var cancellable = Set<AnyCancellable>()
 
+    public init() {}
+
     // MARK: - Public Methods
 
     public func callAsFunction(@ResultBuilder<AnyCancellable> disposables: () -> [AnyCancellable]) {
