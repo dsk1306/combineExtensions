@@ -1,22 +1,15 @@
 import Foundation
 
 @resultBuilder
-public struct ResultBuilder<T> {
+public struct ResultBuilder<T> {}
 
-    public static func buildBlock(_ content: T...) -> [T] {
-        content
-    }
+// MARK: - Public Methods
 
-    public static func buildIf(_ content: T?) -> T? {
-        content
-    }
+public extension ResultBuilder {
 
-    public static func buildEither(first: T) -> T {
-        first
-    }
-
-    public static func buildEither(second: T) -> T {
-        second
-    }
+    static func buildBlock(_ content: T...) -> [T] { content }
+    static func buildIf(_ content: T?) -> T? { content }
+    static func buildEither(first: T) -> T { first }
+    static func buildEither(second: T) -> T { second }
 
 }
