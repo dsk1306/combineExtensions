@@ -6,8 +6,12 @@ import Combine
 /// - note: Unlike CurrentValueRelay, a PassthroughRelay doesn’t have an initial value or a buffer of the most recently-published value.
 public final class PassthroughRelay<Output>: Relay {
 
+    // MARK: - Properties
+
     private let storage: PassthroughSubject<Output, Never>
     private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]()
+
+    // MARK: - Initialization
 
     /// Create a new relay.
     public init() {
@@ -18,6 +22,8 @@ public final class PassthroughRelay<Output>: Relay {
         // Send a finished event upon dealloation.
         subscriptions.forEach { $0.forceFinish() }
     }
+
+    // MARK: - Public Methods
 
     /// Relay a value to downstream subscribers.
     /// - parameter value: A new value.
@@ -40,6 +46,8 @@ public final class PassthroughRelay<Output>: Relay {
     }
 
 }
+
+// MARK: - Subscription
 
 private extension PassthroughRelay {
 
@@ -75,6 +83,8 @@ private extension PassthroughRelay {
     }
 
 }
+
+// MARK: - Sink
 
 private extension PassthroughRelay {
 

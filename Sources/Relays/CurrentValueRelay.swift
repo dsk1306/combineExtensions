@@ -6,10 +6,14 @@ import Combine
 /// - note: Unlike `PassthroughRelay`, `CurrentValueRelay` maintains a buffer of the most recently published value.
 public final class CurrentValueRelay<Output>: Relay {
 
+    // MARK: - Properties
+
     public var value: Output { storage.value }
 
     private let storage: CurrentValueSubject<Output, Never>
     private var subscriptions = [Subscription<CurrentValueSubject<Output, Never>, AnySubscriber<Output, Never>>]()
+
+    // MARK: - Initialization
 
     /// Create a new relay.
     /// - parameter value: Initial value for the relay.
@@ -21,6 +25,8 @@ public final class CurrentValueRelay<Output>: Relay {
         // Send a finished event upon dealloation.
         subscriptions.forEach { $0.forceFinish() }
     }
+
+    // MARK: - Public Methods
 
     /// Relay a value to downstream subscribers.
     /// - parameter value: A new value.
@@ -43,6 +49,8 @@ public final class CurrentValueRelay<Output>: Relay {
     }
 
 }
+
+// MARK: - Subscription
 
 private extension CurrentValueRelay {
 
@@ -78,6 +86,8 @@ private extension CurrentValueRelay {
     }
 
 }
+
+// MARK: - Sink
 
 private extension CurrentValueRelay {
 
