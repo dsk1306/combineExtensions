@@ -2,7 +2,7 @@ import Combine
 @testable import CombineExtensions
 import XCTest
 
-final class PublisherExtensionsTests: XCTestCase {
+final class SingleSinkTests: XCTestCase {
 
     // MARK: - Properties
 
@@ -120,7 +120,7 @@ final class PublisherExtensionsTests: XCTestCase {
 
 // MARK: - Test Error
 
-private extension PublisherExtensionsTests {
+private extension SingleSinkTests {
 
     enum TestError: Error {
 
