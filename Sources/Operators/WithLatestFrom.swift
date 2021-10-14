@@ -1,7 +1,5 @@
 import Combine
 
-// MARK: - Operator methods
-
 public extension Publisher {
 
     ///  Merges two publishers into a single publisher by combining each value from self with the latest value from the second publisher, if any.
@@ -84,7 +82,7 @@ public extension Publisher {
 
 }
 
-// MARK: - Publisher
+// MARK: - WithLatestFrom
 
 public extension Publishers {
 
