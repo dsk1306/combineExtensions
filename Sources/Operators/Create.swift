@@ -62,7 +62,7 @@ public extension AnyPublisher {
 
 }
 
-// MARK: - Publisher
+// MARK: - Create
 
 public extension Publishers {
 
@@ -120,6 +120,14 @@ private extension Publishers.Create {
 
 }
 
+extension Publishers.Create.Subscription: CustomStringConvertible {
+
+    var description: String {
+        return "Create.Subscription<\(Output.self), \(Failure.self)>"
+    }
+
+}
+
 // MARK: - Subscriber
 
 public extension Publishers.Create {
@@ -147,14 +155,6 @@ public extension Publishers.Create {
             onCompletion(completion)
         }
 
-    }
-
-}
-
-extension Publishers.Create.Subscription: CustomStringConvertible {
-
-    var description: String {
-        return "Create.Subscription<\(Output.self), \(Failure.self)>"
     }
 
 }
