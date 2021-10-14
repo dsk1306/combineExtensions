@@ -6,17 +6,27 @@ import class Foundation.NSRecursiveLock
 /// In a sense, the subscription only relays the requests for demand, as well the events emitted by the upstream — to this buffer, which manages the entire behavior and backpressure contract.
 final class DemandBuffer<S: Subscriber> {
 
+    // MARK: - Properties
+
     private let subscriber: S
     private var completion: Subscribers.Completion<S.Failure>?
     private let lock = NSRecursiveLock()
     private var buffer = [S.Input]()
     private var demandState = Demand()
 
+    // MARK: - Initialization
+
     /// Initialize a new demand buffer for a provided downstream subscriber.
     /// - parameter subscriber: The downstream subscriber demanding events.
     init(subscriber: S) {
         self.subscriber = subscriber
     }
+
+}
+
+// MARK: - Public Methods
+
+extension DemandBuffer {
 
     /// Buffer an upstream value to later be forwarded to the downstream subscriber, once it demands it.
     /// - parameter value: Upstream value to buffer.
@@ -52,6 +62,12 @@ final class DemandBuffer<S: Subscriber> {
     func demand(_ demand: Subscribers.Demand) -> Subscribers.Demand {
         flush(adding: demand)
     }
+
+}
+
+// MARK: - Private Methods
+
+private extension DemandBuffer {
 
     /// Flush buffered events to the downstream based on the current state of the downstream's demand.
     /// - parameter newDemand: The new demand to add. If `nil`, the flush isn't the result of an explicit demand change.
@@ -89,7 +105,7 @@ final class DemandBuffer<S: Subscriber> {
 
 }
 
-// MARK: - Private Helpers
+// MARK: - Demand
 
 private extension DemandBuffer {
 
@@ -102,7 +118,7 @@ private extension DemandBuffer {
 
 }
 
-// MARK: - Internally-scoped helpers
+// MARK: - Subscription Extensions
 
 extension Subscription {
 
@@ -114,6 +130,8 @@ extension Subscription {
     }
 
 }
+
+// MARK: - Optional Extensions
 
 extension Optional where Wrapped == Subscription {
 
