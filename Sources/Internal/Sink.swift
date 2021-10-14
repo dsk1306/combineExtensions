@@ -1,7 +1,7 @@
 import Combine
 
 /// A generic sink using an underlying demand buffer to balance the demand of a downstream subscriber for the events of an upstream publisher.
-class Sink<Upstream: Publisher, Downstream: Subscriber> {
+class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
 
     // MARK: - Typealiases
 
@@ -36,26 +36,7 @@ class Sink<Upstream: Publisher, Downstream: Subscriber> {
 
     deinit { cancelUpstream() }
 
-}
-
-// MARK: - Public Methods
-
-extension Sink {
-
-    func demand(_ demand: Subscribers.Demand) {
-        let newDemand = buffer.demand(demand)
-        upstreamSubscription?.requestIfNeeded(newDemand)
-    }
-
-    func cancelUpstream() {
-        upstreamSubscription.kill()
-    }
-
-}
-
-// MARK: - Subscriber
-
-extension Sink: Subscriber {
+    // MARK: - Subscriber
 
     func receive(subscription: Subscription) {
         upstreamSubscription = subscription
@@ -98,6 +79,21 @@ extension Sink: Subscriber {
         }
 
         cancelUpstream()
+    }
+
+}
+
+// MARK: - Public Methods
+
+extension Sink {
+
+    func demand(_ demand: Subscribers.Demand) {
+        let newDemand = buffer.demand(demand)
+        upstreamSubscription?.requestIfNeeded(newDemand)
+    }
+
+    func cancelUpstream() {
+        upstreamSubscription.kill()
     }
 
 }
