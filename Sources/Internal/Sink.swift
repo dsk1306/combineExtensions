@@ -3,14 +3,20 @@ import Combine
 /// A generic sink using an underlying demand buffer to balance the demand of a downstream subscriber for the events of an upstream publisher.
 class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
 
+    // MARK: - Typealiases
+
     typealias TransformFailure = (Upstream.Failure) -> Downstream.Failure?
     typealias TransformOutput = (Upstream.Output) -> Downstream.Input?
+
+    // MARK: - Properties
 
     private(set) var buffer: DemandBuffer<Downstream>
 
     private var upstreamSubscription: Subscription?
     private let transformOutput: TransformOutput?
     private let transformFailure: TransformFailure?
+
+    // MARK: - Initialization
 
     /// Initialize a new sink subscribing to the upstream publisher and fulfilling the demand of the downstream subscriber using a backpresurre demand-maintaining buffer.
     /// - parameter upstream: The upstream publisher.
@@ -30,10 +36,7 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
 
     deinit { cancelUpstream() }
 
-    func demand(_ demand: Subscribers.Demand) {
-        let newDemand = buffer.demand(demand)
-        upstreamSubscription?.requestIfNeeded(newDemand)
-    }
+    // MARK: - Subscriber
 
     func receive(subscription: Subscription) {
         upstreamSubscription = subscription
@@ -76,6 +79,17 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
         }
 
         cancelUpstream()
+    }
+
+}
+
+// MARK: - Public Methods
+
+extension Sink {
+
+    func demand(_ demand: Subscribers.Demand) {
+        let newDemand = buffer.demand(demand)
+        upstreamSubscription?.requestIfNeeded(newDemand)
     }
 
     func cancelUpstream() {

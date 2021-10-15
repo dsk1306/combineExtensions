@@ -5,8 +5,12 @@ import Foundation
 /// The implementation borrows heavily from [Entwine’s](https://github.com/tcldr/Entwine/blob/b839c9fcc7466878d6a823677ce608da998b95b9/Sources/Entwine/Operators/ReplaySubject.swift).
 public final class ReplaySubject<Output, Failure: Error>: Subject {
 
+    // MARK: - Typealiases
+
     public typealias Output = Output
     public typealias Failure = Failure
+
+    // MARK: - Properties
 
     private let bufferSize: Int
     private var buffer = [Output]()
@@ -19,11 +23,15 @@ public final class ReplaySubject<Output, Failure: Error>: Subject {
 
     private let lock = NSRecursiveLock()
 
+    // MARK: - Initialization
+
     /// Create a `ReplaySubject`, buffering up to `bufferSize` values and replaying them to new subscribers.
     /// - Parameter bufferSize: The maximum number of value events to buffer and replay to all future subscribers.
     public init(bufferSize: Int) {
         self.bufferSize = bufferSize
     }
+
+    // MARK: - Public Methods
 
     public func send(_ value: Output) {
         let subscriptions: [Subscription<AnySubscriber<Output, Failure>>]
@@ -90,7 +98,13 @@ public final class ReplaySubject<Output, Failure: Error>: Subject {
         subscription.replay(buffer, completion: completion)
     }
 
-    private func completeSubscriber(withIdentifier subscriberIdentifier: CombineIdentifier) {
+}
+
+// MARK: - Private Methods
+
+private extension ReplaySubject {
+
+    func completeSubscriber(withIdentifier subscriberIdentifier: CombineIdentifier) {
         lock.lock()
         defer { self.lock.unlock() }
 
@@ -98,6 +112,8 @@ public final class ReplaySubject<Output, Failure: Error>: Subject {
     }
 
 }
+
+// MARK: - Subscription
 
 extension ReplaySubject {
 

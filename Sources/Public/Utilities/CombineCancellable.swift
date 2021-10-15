@@ -7,19 +7,25 @@ final public class CombineCancellable {
 
     private var cancellable = Set<AnyCancellable>()
 
+    // MARK: - Initialization
+
     public init() {}
 
-    // MARK: - Public Methods
+}
 
-    public func callAsFunction(@ResultBuilder<AnyCancellable> disposables: () -> [AnyCancellable]) {
+// MARK: - Public Methods
+
+public extension CombineCancellable {
+
+    func callAsFunction(@ResultBuilder<AnyCancellable> disposables: () -> [AnyCancellable]) {
         disposables().forEach { $0.store(in: &cancellable) }
     }
 
-    public func store(_ anyCancellable: AnyCancellable) {
+    func store(_ anyCancellable: AnyCancellable) {
         anyCancellable.store(in: &cancellable)
     }
 
-    public func cancel() {
+    func cancel() {
         cancellable.forEach { $0.cancel() }
         cancellable.removeAll()
     }

@@ -1,26 +1,29 @@
 import Combine
 
-/// A relay that wraps a single value and publishes a new element whenever the value changes.
+/// A relay that broadcasts values to downstream subscribers.
 /// Unlike its subject-counterpart, it may only accept values, and only sends a finishing event on deallocation.
 /// It cannot send a failure event.
-/// - note: Unlike `PassthroughRelay`, `CurrentValueRelay` maintains a buffer of the most recently published value.
-public final class CurrentValueRelay<Output>: Relay {
+/// - note: Unlike CurrentValueRelay, a PassthroughRelay doesn’t have an initial value or a buffer of the most recently-published value.
+public final class PassthroughRelay<Output>: Relay {
 
-    public var value: Output { storage.value }
+    // MARK: - Properties
 
-    private let storage: CurrentValueSubject<Output, Never>
-    private var subscriptions = [Subscription<CurrentValueSubject<Output, Never>, AnySubscriber<Output, Never>>]()
+    private let storage: PassthroughSubject<Output, Never>
+    private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]()
+
+    // MARK: - Initialization
 
     /// Create a new relay.
-    /// - parameter value: Initial value for the relay.
-    public init(_ value: Output) {
-        storage = .init(value)
+    public init() {
+        self.storage = .init()
     }
 
     deinit {
         // Send a finished event upon dealloation.
         subscriptions.forEach { $0.forceFinish() }
     }
+
+    // MARK: - Public Methods
 
     /// Relay a value to downstream subscribers.
     /// - parameter value: A new value.
@@ -44,7 +47,9 @@ public final class CurrentValueRelay<Output>: Relay {
 
 }
 
-private extension CurrentValueRelay {
+// MARK: - Subscription
+
+private extension PassthroughRelay {
 
     final class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
 
@@ -79,7 +84,9 @@ private extension CurrentValueRelay {
 
 }
 
-private extension CurrentValueRelay {
+// MARK: - Sink
+
+private extension PassthroughRelay {
 
     final class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
 
