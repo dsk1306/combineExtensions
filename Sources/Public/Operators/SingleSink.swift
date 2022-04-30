@@ -19,7 +19,7 @@ public extension Publisher {
       sink(
         receiveCompletion: { _ in },
         receiveValue: { output in
-          async {
+          Task {
             await valueHandler(output)
           }
         }
