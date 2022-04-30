@@ -386,7 +386,6 @@ final class ReplaySubjectTests: XCTestCase {
     }
 
 }
-#endif
 
 // MARK: - AnError
 
@@ -397,3 +396,4 @@ private extension ReplaySubjectTests {
     }
 
 }
+#endif
