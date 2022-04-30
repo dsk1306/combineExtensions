@@ -50,6 +50,38 @@ final class SingleSinkTests: XCTestCase {
         XCTAssertNil(finished)
     }
 
+    func test_sinkReceiveValue_async() throws {
+        let expectation1 = expectation(description: "\(#function)")
+
+        subscription = source
+            .sinkValue { [weak self] in
+                do {
+                    try await self?.asyncAssign(value: $0)
+                } catch {
+                    self?.error = .other(error)
+                }
+                expectation1.fulfill()
+            }
+
+        let testValue = 10
+        source.send(testValue)
+        wait(for: [expectation1], timeout: Constant.timeout)
+
+        XCTAssertEqual(value, testValue)
+        XCTAssertNil(error)
+        XCTAssertNil(finished)
+
+        source.send(completion: .finished)
+        XCTAssertEqual(value, testValue)
+        XCTAssertNil(error)
+        XCTAssertNil(finished)
+    }
+
+    func asyncAssign(value: Int) async throws {
+        try await Task.sleep(nanoseconds: 1 * 1_000_000_000)
+        self.value = value
+    }
+
     func test_sinkReceiveCompletion_finished() {
         subscription = source
             .sinkCompletion(completionHandler: completionHandler)
@@ -118,13 +150,37 @@ final class SingleSinkTests: XCTestCase {
 
 }
 
+// MARK: - Constants
+
+private extension SingleSinkTests {
+
+    enum Constant {
+
+        static let timeout: TimeInterval = 5
+
+    }
+
+}
+
 // MARK: - Test Error
 
 private extension SingleSinkTests {
 
-    enum TestError: Error {
+    enum TestError: Error, Equatable {
 
         case test
+        case other(Error)
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            switch (lhs, rhs) {
+            case (.test, .test):
+                return true
+            case (.other(let lhsError), .other(let rhsError)):
+                return lhsError.localizedDescription == rhsError.localizedDescription
+            default:
+                return false
+            }
+        }
 
     }
 
