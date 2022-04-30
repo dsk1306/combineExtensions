@@ -4,11 +4,11 @@ import PackageDescription
 let package = Package(
     name: "CombineExtensions",
     platforms: [
-        .iOS(.v13),
-        .macOS(.v10_15),
-        .macCatalyst(.v13),
-        .tvOS(.v13),
-        .watchOS(.v6)
+        .iOS(.v15),
+        .macOS(.v12),
+        .macCatalyst(.v15),
+        .tvOS(.v15),
+        .watchOS(.v8)
     ],
     products: [
         .library(
