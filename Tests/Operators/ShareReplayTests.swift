@@ -235,6 +235,37 @@ final class ShareReplayTests: XCTestCase {
         XCTAssertEqual(completions, [.failure(.someError)])
     }
 
+    func test_sequentialUpstreamWithShareReplay() {
+        let publisher = Just(1)
+            .eraseToAnyPublisher()
+            .share(replay: 1)
+
+        var valueReceived = false
+        var finishedReceived = false
+
+        Publishers.Zip(publisher, publisher)
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                    case .finished:
+                        finishedReceived = true
+                    case let .failure(error):
+                        XCTFail("Unexpected completion - failure: \(error).")
+                    }
+                },
+                receiveValue: { leftValue, rightValue in
+                    XCTAssertEqual(leftValue, 1)
+                    XCTAssertEqual(rightValue, 1)
+
+                    valueReceived = true
+                }
+            )
+            .store(in: &subscriptions)
+
+        XCTAssertTrue(valueReceived)
+        XCTAssertTrue(finishedReceived)
+    }
+
 }
 
 // MARK: - AnError
