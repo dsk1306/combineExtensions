@@ -68,6 +68,9 @@ public final class ReplaySubject<Output, Failure: Error>: Subject {
         }
 
         subscriptions.forEach { $0.forwardCompletionToBuffer(completion) }
+
+        lock.lock()
+        defer { self.lock.unlock() }
         self.subscriptions.removeAll()
     }
 
