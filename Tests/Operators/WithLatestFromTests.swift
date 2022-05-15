@@ -200,6 +200,32 @@ final class WithLatestFromTests: XCTestCase {
         XCTAssertTrue(completed)
     }
 
+    func test_withResultSelector_doesNotRetainClassBasedPublisher() {
+        var subject1: PassthroughSubject<Int, Never>? = PassthroughSubject<Int, Never>()
+        var subject2: PassthroughSubject<String, Never>? = PassthroughSubject<String, Never>()
+        weak var weakSubject1: PassthroughSubject<Int, Never>? = subject1
+        weak var weakSubject2: PassthroughSubject<String, Never>? = subject2
+
+        var results = [String]()
+
+        subscription = subject1?
+            .withLatestFrom(subject2!) { "\($0)\($1)" }
+            .sink(receiveCompletion: { _ in },
+                  receiveValue: { results.append($0) })
+
+        subject1?.send(1)
+        subject2?.send("bar")
+        subject1?.send(2)
+
+        XCTAssertEqual(results, ["2bar"])
+
+        subscription = nil
+        subject1 = nil
+        subject2 = nil
+        XCTAssertNil(weakSubject1)
+        XCTAssertNil(weakSubject2)
+    }
+
     func test_withResultSelector_limitedDemand() {
         let subject1 = PassthroughSubject<Int, Never>()
         let subject2 = PassthroughSubject<String, Never>()
@@ -283,6 +309,32 @@ final class WithLatestFromTests: XCTestCase {
         subscription.cancel()
     }
 
+    func test_noResultSelector_doesNotRetainClassBasedPublisher() {
+        var subject1: PassthroughSubject<Int, Never>? = PassthroughSubject<Int, Never>()
+        var subject2: PassthroughSubject<String, Never>? = PassthroughSubject<String, Never>()
+        weak var weakSubject1: PassthroughSubject<Int, Never>? = subject1
+        weak var weakSubject2: PassthroughSubject<String, Never>? = subject2
+
+        var results = [String]()
+
+        subscription = subject1?
+            .withLatestFrom(subject2!)
+            .sink(receiveCompletion: { _ in },
+                  receiveValue: { results.append($0) })
+
+        subject1?.send(1)
+        subject2?.send("bar")
+        subject1?.send(4)
+
+        XCTAssertEqual(results, ["bar"])
+
+        subscription = nil
+        subject1 = nil
+        subject2 = nil
+        XCTAssertNil(weakSubject1)
+        XCTAssertNil(weakSubject2)
+    }
+
     func test_withLatestFrom2_withResultSelector() {
         let subject1 = PassthroughSubject<Int, Never>()
         let subject2 = PassthroughSubject<String, Never>()
@@ -334,6 +386,38 @@ final class WithLatestFromTests: XCTestCase {
         XCTAssertFalse(completed)
         subject1.send(completion: .finished)
         XCTAssertTrue(completed)
+    }
+
+    func test_withLatestFrom2_withResultSelector_doesNotRetainPublisher() {
+        var subject1: PassthroughSubject<Int, Never>? = PassthroughSubject<Int, Never>()
+        var subject2: PassthroughSubject<String, Never>? = PassthroughSubject<String, Never>()
+        var subject3: PassthroughSubject<Bool, Never>? = PassthroughSubject<Bool, Never>()
+        weak var weakSubject1: PassthroughSubject<Int, Never>? = subject1
+        weak var weakSubject2: PassthroughSubject<String, Never>? = subject2
+        weak var weakSubject3: PassthroughSubject<Bool, Never>? = subject3
+
+        var results = [String]()
+
+        subscription = subject1?
+            .withLatestFrom(subject2!, subject3!) { "\($0)|\($1.0)|\($1.1)" }
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { results.append($0) }
+            )
+
+        subject2?.send("bar")
+        subject3?.send(true)
+        subject1?.send(10)
+
+        XCTAssertEqual(results, ["10|bar|true"])
+
+        subscription = nil
+        subject1 = nil
+        subject2 = nil
+        subject3 = nil
+        XCTAssertNil(weakSubject1)
+        XCTAssertNil(weakSubject2)
+        XCTAssertNil(weakSubject3)
     }
 
     func test_withLatestFrom2_noResultSelector() {

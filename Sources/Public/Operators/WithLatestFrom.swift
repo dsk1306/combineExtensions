@@ -208,6 +208,7 @@ private extension Publishers.WithLatestFrom {
         }
 
         func cancel() {
+            sink?.cancelUpstream()
             sink = nil
             otherSubscription?.cancel()
         }
