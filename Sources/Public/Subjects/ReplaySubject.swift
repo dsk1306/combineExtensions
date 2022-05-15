@@ -68,6 +68,7 @@ public final class ReplaySubject<Output, Failure: Error>: Subject {
         }
 
         subscriptions.forEach { $0.forwardCompletionToBuffer(completion) }
+        self.subscriptions.removeAll()
     }
 
     public func send(subscription: Combine.Subscription) {
@@ -144,7 +145,6 @@ extension ReplaySubject {
 
         func forwardCompletionToBuffer(_ completion: Subscribers.Completion<Failure>) {
             demandBuffer?.complete(completion: completion)
-            cancel()
         }
 
         func request(_ demand: Subscribers.Demand) {
