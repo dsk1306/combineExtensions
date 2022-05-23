@@ -44,5 +44,6 @@ jobs:
     
     - name: Upload Coverage to CodeCov
       uses: codecov/codecov-action@v2
-      xcode: true
-      xcode_archive_path: testResults.xcresult
+      with:
+        xcode: true
+        xcode_archive_path: testResults.xcresult
