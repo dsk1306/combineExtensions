@@ -25,22 +25,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       
-    - name: Set xCode 13.3.1
+    - name: Set xCode 13.4
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '13.3.1'
+        xcode-version: '13.4'
 
-    - name: Xcodebuild Action
-      uses: sersoft-gmbh/xcodebuild-action@v1
-      with:
-        action: test
-        workspace: .swiftpm/xcode/package.xcworkspace
-        scheme: CombineExtensions
-        sdk: ${{ matrix.sdk }}
-        destination: "${{ matrix.destination }}"
-        enable-code-coverage: true
-        use-xcpretty: true
-        resultBundlePath: testResults.xcresult
+    - name: Run Tests
+    - run: swift test --enable-code-coverage
     
     - name: Upload Coverage to CodeCov
       uses: codecov/codecov-action@v3
