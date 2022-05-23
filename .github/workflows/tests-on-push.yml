@@ -43,7 +43,7 @@ jobs:
         resultBundlePath: testResults.xcresult
     
     - name: Upload Coverage to CodeCov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
         xcode: true
         xcode_archive_path: testResults.xcresult
