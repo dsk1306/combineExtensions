@@ -31,7 +31,7 @@ jobs:
         xcode-version: '13.4'
 
     - name: Run Tests
-    - run: swift test --enable-code-coverage
+      run: swift test --enable-code-coverage
     
     - name: Upload Coverage to CodeCov
       uses: codecov/codecov-action@v3
