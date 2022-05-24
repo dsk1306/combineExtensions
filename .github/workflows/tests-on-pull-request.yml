@@ -30,20 +30,5 @@ jobs:
       with:
         xcode-version: '13.4'
 
-    - name: Xcodebuild Action
-      uses: sersoft-gmbh/xcodebuild-action@v1
-      with:
-        action: test
-        workspace: .swiftpm/xcode/package.xcworkspace
-        scheme: CombineExtensions
-        sdk: ${{ matrix.sdk }}
-        destination: "${{ matrix.destination }}"
-        enable-code-coverage: true
-        use-xcpretty: true
-        resultBundlePath: testResults.xcresult
-    
-    - name: Upload Coverage to CodeCov
-      uses: codecov/codecov-action@v3
-      with:
-        xcode: true
-        xcode_archive_path: testResults.xcresult
+    - name: Run Tests
+      run: swift test
