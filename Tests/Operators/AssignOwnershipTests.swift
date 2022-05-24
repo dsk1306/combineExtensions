@@ -93,9 +93,5 @@ final class AssignOwnershipTests: XCTestCase {
         XCTAssertEqual(initialRetainCount + 3, resultRetainCount3)
     }
 
-    func test_alwaysFail() {
-        XCTFail("Test")
-    }
-
 }
 #endif
