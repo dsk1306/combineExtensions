@@ -1,4 +1,3 @@
-#if !os(watchOS)
 import Combine
 @testable import CombineExtensions
 import XCTest
@@ -391,4 +390,3 @@ private extension ReplaySubjectTests {
   }
 
 }
-#endif

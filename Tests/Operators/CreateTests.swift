@@ -1,4 +1,3 @@
-#if !os(watchOS)
 import XCTest
 import Combine
 import CombineExtensions
@@ -156,4 +155,3 @@ private extension CreateTests {
   }
 
 }
-#endif

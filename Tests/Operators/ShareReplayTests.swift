@@ -1,4 +1,3 @@
-#if !os(watchOS)
 import Combine
 import CombineExtensions
 import XCTest
@@ -279,4 +278,3 @@ private extension ShareReplayTests {
   }
 
 }
-#endif

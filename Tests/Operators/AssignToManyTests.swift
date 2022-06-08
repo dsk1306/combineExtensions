@@ -1,4 +1,3 @@
-#if !os(watchOS)
 import XCTest
 import Combine
 import CombineExtensions
@@ -136,4 +135,3 @@ private class Fake3<T> {
   }
 
 }
-#endif

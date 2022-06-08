@@ -1,4 +1,3 @@
-#if !os(watchOS)
 import XCTest
 import Combine
 import CombineExtensions
@@ -143,4 +142,3 @@ final class PassthroughRelayTests: XCTestCase {
   }
 
 }
-#endif
