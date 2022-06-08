@@ -3,13 +3,13 @@ import Foundation
 
 final public class CombineCancellable {
 
-    // MARK: - Private Properties
+  // MARK: - Private Properties
 
-    private var cancellable = Set<AnyCancellable>()
+  private var cancellable = Set<AnyCancellable>()
 
-    // MARK: - Initialization
+  // MARK: - Initialization
 
-    public init() {}
+  public init() {}
 
 }
 
@@ -17,18 +17,18 @@ final public class CombineCancellable {
 
 public extension CombineCancellable {
 
-    func callAsFunction(@ResultBuilder<AnyCancellable> disposables: () -> [AnyCancellable]) {
-        disposables().forEach { $0.store(in: &cancellable) }
-    }
+  func callAsFunction(@ResultBuilder<AnyCancellable> disposables: () -> [AnyCancellable]) {
+    disposables().forEach { $0.store(in: &cancellable) }
+  }
 
-    func store(_ anyCancellable: AnyCancellable) {
-        anyCancellable.store(in: &cancellable)
-    }
+  func store(_ anyCancellable: AnyCancellable) {
+    anyCancellable.store(in: &cancellable)
+  }
 
-    func cancel() {
-        cancellable.forEach { $0.cancel() }
-        cancellable.removeAll()
-    }
+  func cancel() {
+    cancellable.forEach { $0.cancel() }
+    cancellable.removeAll()
+  }
 
 }
 
@@ -36,8 +36,8 @@ public extension CombineCancellable {
 
 public extension AnyCancellable {
 
-    func store(in bag: CombineCancellable) {
-        bag.store(self)
-    }
+  func store(in bag: CombineCancellable) {
+    bag.store(self)
+  }
 
 }

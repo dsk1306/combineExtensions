@@ -3,48 +3,48 @@ import Combine
 /// A generic sink using an underlying demand buffer to balance the demand of a downstream subscriber for the events of an upstream publisher.
 class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
 
-    // MARK: - Typealiases
+  // MARK: - Typealiases
 
-    typealias TransformFailure = (Upstream.Failure) -> Downstream.Failure?
-    typealias TransformOutput = (Upstream.Output) -> Downstream.Input?
+  typealias TransformFailure = (Upstream.Failure) -> Downstream.Failure?
+  typealias TransformOutput = (Upstream.Output) -> Downstream.Input?
 
-    // MARK: - Properties
+  // MARK: - Properties
 
-    private(set) var buffer: DemandBuffer<Downstream>
+  private(set) var buffer: DemandBuffer<Downstream>
 
-    private var upstreamSubscription: Subscription?
-    private let transformOutput: TransformOutput?
-    private let transformFailure: TransformFailure?
+  private var upstreamSubscription: Subscription?
+  private let transformOutput: TransformOutput?
+  private let transformFailure: TransformFailure?
 
-    // MARK: - Initialization
+  // MARK: - Initialization
 
-    /// Initialize a new sink subscribing to the upstream publisher and fulfilling the demand of the downstream subscriber using a backpresurre demand-maintaining buffer.
-    /// - parameter upstream: The upstream publisher.
-    /// - parameter downstream: The downstream subscriber.
-    /// - parameter transformOutput: Transform the upstream publisher's output type to the downstream's input type.
-    /// - parameter transformFailure: Transform the upstream failure type to the downstream's failure type.
-    /// - note: You **must** provide the two transformation functions above if you're using the default `Sink` implementation. Otherwise, you must subclass `Sink` with your own publisher's sink and manage the buffer accordingly.
-    init(upstream: Upstream,
-         downstream: Downstream,
-         transformOutput: TransformOutput? = nil,
-         transformFailure: TransformFailure? = nil) {
-        self.buffer = DemandBuffer(subscriber: downstream)
-        self.transformOutput = transformOutput
-        self.transformFailure = transformFailure
-        upstream.subscribe(self)
-    }
+  /// Initialize a new sink subscribing to the upstream publisher and fulfilling the demand of the downstream subscriber using a backpresurre demand-maintaining buffer.
+  /// - parameter upstream: The upstream publisher.
+  /// - parameter downstream: The downstream subscriber.
+  /// - parameter transformOutput: Transform the upstream publisher's output type to the downstream's input type.
+  /// - parameter transformFailure: Transform the upstream failure type to the downstream's failure type.
+  /// - note: You **must** provide the two transformation functions above if you're using the default `Sink` implementation. Otherwise, you must subclass `Sink` with your own publisher's sink and manage the buffer accordingly.
+  init(upstream: Upstream,
+       downstream: Downstream,
+       transformOutput: TransformOutput? = nil,
+       transformFailure: TransformFailure? = nil) {
+    self.buffer = DemandBuffer(subscriber: downstream)
+    self.transformOutput = transformOutput
+    self.transformFailure = transformFailure
+    upstream.subscribe(self)
+  }
 
-    deinit { cancelUpstream() }
+  deinit { cancelUpstream() }
 
-    // MARK: - Subscriber
+  // MARK: - Subscriber
 
-    func receive(subscription: Subscription) {
-        upstreamSubscription = subscription
-    }
+  func receive(subscription: Subscription) {
+    upstreamSubscription = subscription
+  }
 
-    func receive(_ input: Upstream.Output) -> Subscribers.Demand {
-        guard let transform = transformOutput else {
-            fatalError("""
+  func receive(_ input: Upstream.Output) -> Subscribers.Demand {
+    guard let transform = transformOutput else {
+      fatalError("""
                 ❌ Missing output transformation
                 =========================
 
@@ -52,19 +52,19 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
                     - Provide a transformation function from the upstream's output to the downstream's input; or
                     - Subclass `Sink` with your own publisher's Sink and manage the buffer yourself
             """)
-        }
-
-        guard let input = transform(input) else { return .none }
-        return buffer.buffer(value: input)
     }
 
-    func receive(completion: Subscribers.Completion<Upstream.Failure>) {
-        switch completion {
-        case .finished:
-            buffer.complete(completion: .finished)
-        case .failure(let error):
-            guard let transform = transformFailure else {
-                fatalError("""
+    guard let input = transform(input) else { return .none }
+    return buffer.buffer(value: input)
+  }
+
+  func receive(completion: Subscribers.Completion<Upstream.Failure>) {
+    switch completion {
+    case .finished:
+      buffer.complete(completion: .finished)
+    case .failure(let error):
+      guard let transform = transformFailure else {
+        fatalError("""
                     ❌ Missing failure transformation
                     =========================
 
@@ -72,14 +72,14 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
                         - Provide a transformation function from the upstream's failure to the downstream's failuer; or
                         - Subclass `Sink` with your own publisher's Sink and manage the buffer yourself
                 """)
-            }
+      }
 
-            guard let error = transform(error) else { return }
-            buffer.complete(completion: .failure(error))
-        }
-
-        cancelUpstream()
+      guard let error = transform(error) else { return }
+      buffer.complete(completion: .failure(error))
     }
+
+    cancelUpstream()
+  }
 
 }
 
@@ -87,13 +87,13 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
 
 extension Sink {
 
-    func demand(_ demand: Subscribers.Demand) {
-        let newDemand = buffer.demand(demand)
-        upstreamSubscription?.requestIfNeeded(newDemand)
-    }
+  func demand(_ demand: Subscribers.Demand) {
+    let newDemand = buffer.demand(demand)
+    upstreamSubscription?.requestIfNeeded(newDemand)
+  }
 
-    func cancelUpstream() {
-        upstreamSubscription.kill()
-    }
+  func cancelUpstream() {
+    upstreamSubscription.kill()
+  }
 
 }
