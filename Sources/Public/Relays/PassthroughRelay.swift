@@ -6,44 +6,44 @@ import Combine
 /// - note: Unlike CurrentValueRelay, a PassthroughRelay doesn’t have an initial value or a buffer of the most recently-published value.
 public final class PassthroughRelay<Output>: Relay {
 
-    // MARK: - Properties
+  // MARK: - Properties
 
-    private let storage: PassthroughSubject<Output, Never>
-    private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]()
+  private let storage: PassthroughSubject<Output, Never>
+  private var subscriptions = [Subscription<PassthroughSubject<Output, Never>,AnySubscriber<Output, Never>>]()
 
-    // MARK: - Initialization
+  // MARK: - Initialization
+  
+  /// Create a new relay.
+  public init() {
+    self.storage = .init()
+  }
 
-    /// Create a new relay.
-    public init() {
-        self.storage = .init()
-    }
+  deinit {
+    // Send a finished event upon dealloation.
+    subscriptions.forEach { $0.forceFinish() }
+  }
 
-    deinit {
-        // Send a finished event upon dealloation.
-        subscriptions.forEach { $0.forceFinish() }
-    }
+  // MARK: - Public Methods
 
-    // MARK: - Public Methods
+  /// Relay a value to downstream subscribers.
+  /// - parameter value: A new value.
+  public func accept(_ value: Output) {
+    storage.send(value)
+  }
 
-    /// Relay a value to downstream subscribers.
-    /// - parameter value: A new value.
-    public func accept(_ value: Output) {
-        storage.send(value)
-    }
+  public func receive<S: Subscriber>(subscriber: S) where Output == S.Input, Failure == S.Failure {
+    let subscription = Subscription(upstream: storage, downstream: AnySubscriber(subscriber))
+    self.subscriptions.append(subscription)
+    subscriber.receive(subscription: subscription)
+  }
 
-    public func receive<S: Subscriber>(subscriber: S) where Output == S.Input, Failure == S.Failure {
-        let subscription = Subscription(upstream: storage, downstream: AnySubscriber(subscriber))
-        self.subscriptions.append(subscription)
-        subscriber.receive(subscription: subscription)
-    }
+  public func subscribe<P: Publisher>(_ publisher: P) -> AnyCancellable where Output == P.Output, P.Failure == Never {
+    publisher.subscribe(storage)
+  }
 
-    public func subscribe<P: Publisher>(_ publisher: P) -> AnyCancellable where Output == P.Output, P.Failure == Never {
-        publisher.subscribe(storage)
-    }
-
-    public func subscribe<P: Relay>(_ publisher: P) -> AnyCancellable where Output == P.Output {
-        publisher.subscribe(storage)
-    }
+  public func subscribe<P: Relay>(_ publisher: P) -> AnyCancellable where Output == P.Output {
+    publisher.subscribe(storage)
+  }
 
 }
 
@@ -51,36 +51,38 @@ public final class PassthroughRelay<Output>: Relay {
 
 private extension PassthroughRelay {
 
-    final class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
+  final class Subscription<Upstream: Publisher, Downstream: Subscriber>: Combine.Subscription where Upstream.Output == Downstream.Input, Upstream.Failure == Downstream.Failure {
 
-        private var sink: Sink<Upstream, Downstream>?
+    private var sink: Sink<Upstream, Downstream>?
 
-        var shouldForwardCompletion: Bool {
-            get { sink?.shouldForwardCompletion ?? false }
-            set { sink?.shouldForwardCompletion = newValue }
-        }
-
-        init(upstream: Upstream,
-             downstream: Downstream) {
-            self.sink = Sink(upstream: upstream,
-                             downstream: downstream,
-                             transformOutput: { $0 })
-        }
-
-        func forceFinish() {
-            self.sink?.shouldForwardCompletion = true
-            self.sink?.receive(completion: .finished)
-        }
-
-        func request(_ demand: Subscribers.Demand) {
-            sink?.demand(demand)
-        }
-
-        func cancel() {
-            sink = nil
-        }
-
+    var shouldForwardCompletion: Bool {
+      get { sink?.shouldForwardCompletion ?? false }
+      set { sink?.shouldForwardCompletion = newValue }
     }
+
+    init(upstream: Upstream,
+         downstream: Downstream) {
+      self.sink = Sink(
+        upstream: upstream,
+        downstream: downstream,
+        transformOutput: { $0 }
+      )
+    }
+
+    func forceFinish() {
+      self.sink?.shouldForwardCompletion = true
+      self.sink?.receive(completion: .finished)
+    }
+
+    func request(_ demand: Subscribers.Demand) {
+      sink?.demand(demand)
+    }
+
+    func cancel() {
+      sink = nil
+    }
+
+  }
 
 }
 
@@ -88,15 +90,15 @@ private extension PassthroughRelay {
 
 private extension PassthroughRelay {
 
-    final class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
+  final class Sink<Upstream: Publisher, Downstream: Subscriber>: CombineExtensions.Sink<Upstream, Downstream> {
 
-        var shouldForwardCompletion = false
+    var shouldForwardCompletion = false
 
-        override func receive(completion: Subscribers.Completion<Upstream.Failure>) {
-            guard shouldForwardCompletion else { return }
-            super.receive(completion: completion)
-        }
-
+    override func receive(completion: Subscribers.Completion<Upstream.Failure>) {
+      guard shouldForwardCompletion else { return }
+      super.receive(completion: completion)
     }
+
+  }
 
 }
