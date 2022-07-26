@@ -32,3 +32,8 @@ jobs:
 
     - name: Run Tests
       run: swift test
+      
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
