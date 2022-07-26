@@ -29,11 +29,8 @@ jobs:
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '13.4'
-
-    - name: Run Tests
-      run: swift test
-      
-    - name: Coveralls
-      uses: coverallsapp/github-action@master
+    
+    - uses: maierj/fastlane-action@v2
       with:
-        github-token: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        lane: 'test_report'
+        options: '{ "coveralls_repo_token": ${{ secrets.COVERALLS_REPO_TOKEN }} }'
