@@ -30,7 +30,7 @@ jobs:
       with:
         xcode-version: '13.4'
     
-    - uses: maierj/fastlane-action@v2
+    - uses: maierj/fastlane-action@v2.2.1
       with:
         lane: 'test_report'
         options: '{ "coveralls_repo_token": ${{ secrets.COVERALLS_REPO_TOKEN }} }'
