@@ -1,0 +1,31 @@
+default_platform(:ios)
+
+TESTS_OUTPUT = './.build/artifacts/Coverage/UnitTests'
+XCRESULT_OUTPUT = './.build/artifacts/Coverage/UnitTests/CombineExtensions.xcresult'
+COVERAGE_OUTPUT = './.build/artifacts/Coverage/CodeCoverage'
+
+platform :ios do
+
+  desc "Run tests and create a unit-test report"
+  lane :test_report do |options|
+    spm(command: "reset")
+    sh("swift", "package", "reset")
+    run_tests(
+      package_path: './',
+      scheme: 'CombineExtensions',
+      device: 'iPhone 13',
+      output_directory: TESTS_OUTPUT,
+      clean: true,
+      result_bundle: true
+    )
+    xcov(
+      xccov_file_direct_path: XCRESULT_OUTPUT,
+      output_directory: COVERAGE_OUTPUT,
+      json_report: true,
+      include_targets: 'CombineExtensions',
+      coveralls_repo_token: options[:coveralls_repo_token],
+      is_swift_package: true
+    )
+  end
+
+end
