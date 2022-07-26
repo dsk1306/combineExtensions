@@ -31,7 +31,7 @@ jobs:
         xcode-version: '13.4'
 
     - name: Run Tests
-      run:
+      run: |
         swift test --enable-code-coverage
         xcrun llvm-cov report .build/debug/CombineExtensionsPackageTests.xctest/Contents/MacOS/CombineExtensionsPackageTests -instr-profile .build/debug/codecov/default.profdata
         xcrun llvm-cov export -format="lcov" .build/debug/CombineExtensionsPackageTests.xctest/Contents/MacOS/CombineExtensionsPackageTests -instr-profile .build/debug/codecov/default.profdata > .build/artifacts/info.lcov
