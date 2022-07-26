@@ -31,4 +31,4 @@ jobs:
         xcode-version: '13.4'
 
     - name: Run Tests and upload coverage
-      run: bundle exec fastlane test_report coveralls_repo_token:${{ secrets.GITHUB_TOKEN }}
+      run: fastlane test_report coveralls_repo_token:${{ secrets.GITHUB_TOKEN }}
