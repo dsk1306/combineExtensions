@@ -1,0 +1,51 @@
+name: Run Tests and Upload Coverage
+
+on:
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: true
+
+env:
+  LCOV_PATH: .build/artifacts/info.lcov
+  BUILD_FOLDER: .build/debug/CombineExtensionsPackageTests.xctest/Contents/MacOS/CombineExtensionsPackageTests
+  PROFDATA_FOLDER: .build/debug/codecov/default.profdata
+
+jobs:
+  run-tests-and-upload-coverage:
+    name: "Run Tests and Upload Coverage"
+    runs-on: macos-12
+    
+    strategy:
+      matrix:
+        platform: [iOS, iPad]
+        include:
+          - platform: iOS
+            sdk: iphonesimulator
+            destination: "name=iPhone 13"
+
+          - platform: iPad
+            sdk: iphonesimulator
+            destination: "name=iPad Pro (12.9-inch) (5th generation)"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: Set xCode 13.4
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '13.4'
+
+    - name: Run tests and generate lcov file
+      run: |
+        swift test --enable-code-coverage
+        xcrun llvm-cov report $BUILD_FOLDER -instr-profile $PROFDATA_FOLDER
+        xcrun llvm-cov export -format="lcov" $BUILD_FOLDER -instr-profile $PROFDATA_FOLDER > $LCOV_PATH
+      
+    - name: Upload coverage data to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: $CODECOV_TOKEN
+        files: $LCOV_PATH
+        verbose: true
