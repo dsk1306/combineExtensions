@@ -7,5 +7,4 @@ on:
 jobs:
   run-tests-and-upload-coverage:
     uses: dsk1306/combineExtensions/.github/workflows/run-tests-and-upload-coverage.yml@codecov
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    secrets: inherit
