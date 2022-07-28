@@ -44,5 +44,5 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ${{ LCOV_PATH }}
+        files: ${{ env.LCOV_PATH }}
         verbose: true
