@@ -1,0 +1,10 @@
+coverage:
+  status:
+    patch: false
+    project:
+      default:
+        target: auto
+        threshold: 5.0
+
+ignore:
+  - "Tests"
