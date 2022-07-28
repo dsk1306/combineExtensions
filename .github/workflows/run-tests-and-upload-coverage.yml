@@ -2,7 +2,6 @@ name: Run Tests and Upload Coverage
 
 on:
   workflow_call:
-    secrets: inherit
 
 env:
   LCOV_PATH: .build/artifacts/info.lcov
