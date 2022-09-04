@@ -5,16 +5,14 @@ public extension Publisher {
 
   /// Attaches a subscriber with closure-based behavior.
   /// - Parameter valueHandler: The closure to execute on completion.
-  /// - Returns: A cancellable instance, which you use when you end assignment of the received value.
-  /// Deallocation of the result will tear down the subscription stream.
+  /// - Returns: A cancellable instance, which you use when you end assignment of the received value. Deallocation of the result will tear down the subscription stream.
   func sinkValue(valueHandler: @escaping ((Output) -> Void)) -> AnyCancellable {
     sink(receiveCompletion: { _ in }, receiveValue: valueHandler)
   }
 
   /// Attaches a subscriber with async closure-based behavior.
   /// - Parameter valueHandler: The async closure to execute on completion.
-  /// - Returns: A cancellable instance, which you use when you end assignment of the received value.
-  /// Deallocation of the result will tear down the subscription stream.
+  /// - Returns: A cancellable instance, which you use when you end assignment of the received value. Deallocation of the result will tear down the subscription stream.
   func sinkValue(valueHandler: @escaping ((Output) async -> Void)) -> AnyCancellable {
     sink(
       receiveCompletion: { _ in },
@@ -28,8 +26,7 @@ public extension Publisher {
 
   /// Attaches a subscriber with closure-based behavior.
   /// - Parameter completionHandler: The closure to execute on completion.
-  /// - Returns: A cancellable instance, which you use when you end assignment of the received value.
-  /// Deallocation of the result will tear down the subscription stream.
+  /// - Returns: A cancellable instance, which you use when you end assignment of the received value. Deallocation of the result will tear down the subscription stream.
   func sinkCompletion(completionHandler: @escaping (() -> Void)) -> AnyCancellable {
     sink(
       receiveCompletion: {
@@ -46,8 +43,7 @@ public extension Publisher {
 
   /// Attaches a subscriber with closure-based behavior.
   /// - Parameter failureHandler: The closure to execute on failure.
-  /// - Returns: A cancellable instance, which you use when you end assignment of the received value.
-  /// Deallocation of the result will tear down the subscription stream.
+  /// - Returns: A cancellable instance, which you use when you end assignment of the received value. Deallocation of the result will tear down the subscription stream.
   func sinkFailure(failureHandler: @escaping (Failure) -> Void) -> AnyCancellable {
     sink(
       receiveCompletion: {

@@ -3,58 +3,58 @@ import Foundation
 
 public extension AnyPublisher {
 
-  /// Create a publisher which accepts a closure with a subscriber argument, to which you can dynamically send value or completion events.
+  /// Creates a publisher which accepts a closure with a subscriber argument, to which you can dynamically send value or completion events.
+  ///
   /// You should return a `Cancelable`-conforming object from the closure in which you can define any cleanup actions to execute when the pubilsher completes or the subscription to the publisher is canceled.
-  /// - parameter factory: A factory with a closure to which you can dynamically send value or completion events.
-  ///                      You should return a `Cancelable`-conforming object from it to encapsulate any cleanup-logic for your work.
+  /// - Parameter factory: A factory with a closure to which you can dynamically send value or completion events. You should return a `Cancelable`-conforming object from it to encapsulate any cleanup-logic for your work.
   ///
   /// An example usage could look as follows:
   ///
-  ///    ```
-  ///    AnyPublisher<String, MyError>.create { subscriber in
-  ///        // Values
-  ///        subscriber.send("Hello")
-  ///        subscriber.send("World!")
+  /// ```
+  /// AnyPublisher<String, MyError>.create { subscriber in
+  ///   // Values
+  ///   subscriber.send("Hello")
+  ///   subscriber.send("World!")
   ///
-  ///        // Complete with error
-  ///        subscriber.send(completion: .failure(MyError.someError))
+  ///   // Complete with error
+  ///   subscriber.send(completion: .failure(MyError.someError))
   ///
-  ///        // Or, complete successfully
-  ///        subscriber.send(completion: .finished)
+  ///   // Or, complete successfully
+  ///   subscriber.send(completion: .finished)
   ///
-  ///        return AnyCancellable {
-  ///          // Perform clean-up
-  ///        }
-  ///    }
-  ///
+  ///   return AnyCancellable {
+  ///     // Perform clean-up
+  ///   }
+  /// }
+  /// ```
   init(_ factory: @escaping Publishers.Create<Output, Failure>.SubscriberHandler) {
     self = Publishers.Create(factory: factory).eraseToAnyPublisher()
   }
 
-  /// Create a publisher which accepts a closure with a subscriber argument, to which you can dynamically send value or completion events.
+  /// Creates a publisher which accepts a closure with a subscriber argument, to which you can dynamically send value or completion events.
+  ///
   /// You should return a `Cancelable`-conforming object from the closure in which you can define any cleanup actions to execute when the pubilsher completes or the subscription to the publisher is canceled.
-  /// - parameter factory: A factory with a closure to which you can dynamically send value or completion events.
-  ///                      You should return a `Cancelable`-conforming object from it to encapsulate any cleanup-logic for your work.
+  /// - Parameter factory: A factory with a closure to which you can dynamically send value or completion events. You should return a `Cancelable`-conforming object from it to encapsulate any cleanup-logic for your work.
   ///
   /// An example usage could look as follows:
   ///
-  ///    ```
-  ///    AnyPublisher<String, MyError>.create { subscriber in
-  ///        // Values
-  ///        subscriber.send("Hello")
-  ///        subscriber.send("World!")
+  /// ```
+  /// AnyPublisher<String, MyError>.create { subscriber in
+  ///   // Values
+  ///   subscriber.send("Hello")
+  ///   subscriber.send("World!")
   ///
-  ///        // Complete with error
-  ///        subscriber.send(completion: .failure(MyError.someError))
+  ///   // Complete with error
+  ///   subscriber.send(completion: .failure(MyError.someError))
   ///
-  ///        // Or, complete successfully
-  ///        subscriber.send(completion: .finished)
+  ///   // Or, complete successfully
+  ///   subscriber.send(completion: .finished)
   ///
-  ///        return AnyCancellable {
-  ///          // Perform clean-up
-  ///        }
-  ///    }
-  ///
+  ///   return AnyCancellable {
+  ///     // Perform clean-up
+  ///   }
+  /// }
+  /// ```
   static func create(_ factory: @escaping Publishers.Create<Output, Failure>.SubscriberHandler)
   -> AnyPublisher<Output, Failure> {
     AnyPublisher(factory)
@@ -67,6 +67,7 @@ public extension AnyPublisher {
 public extension Publishers {
 
   /// A publisher which accepts a closure with a subscriber argument, to which you can dynamically send value or completion events.
+  ///
   /// You should return a `Cancelable`-conforming object from the closure in which you can define any cleanup actions to execute when the pubilsher completes or the subscription to the publisher is canceled.
   struct Create<Output, Failure: Swift.Error>: Publisher {
 
@@ -74,7 +75,7 @@ public extension Publishers {
     private let factory: SubscriberHandler
 
     /// Initialize the publisher with a provided factory.
-    /// - parameter factory: A factory with a closure to which you can dynamically push value or completion events.
+    /// - Parameter factory: A factory with a closure to which you can dynamically push value or completion events.
     public init(factory: @escaping SubscriberHandler) {
       self.factory = factory
     }
@@ -144,7 +145,7 @@ public extension Publishers.Create {
     }
 
     /// Sends a value to the subscriber.
-    /// - Parameter value: The value to send.
+    /// - Parameter input: The value to send.
     public func send(_ input: Output) {
       onValue(input)
     }

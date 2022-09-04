@@ -2,10 +2,11 @@ import Combine
 
 public extension Publisher {
 
-  ///  Merges two publishers into a single publisher by combining each value from self with the latest value from the second publisher, if any.
-  ///  - parameter other: A second publisher source.
-  ///  - parameter resultSelector: Function to invoke for each value from the self combined with the latest value from the second source, if any.
-  ///  - returns: A publisher containing the result of combining each value of the self with the latest value from the second publisher, if any, using the specified result selector function.
+  /// Merges two publishers into a single publisher by combining each value from self with the latest value from the second publisher, if any.
+  /// - Parameters:
+  ///   - other: A second publisher source.
+  ///   - resultSelector: Function to invoke for each value from the self combined with the latest value from the second source, if any.
+  /// - Returns: A publisher containing the result of combining each value of the self with the latest value from the second publisher, if any, using the specified result selector function.
   func withLatestFrom<Other: Publisher, Result>(
     _ other: Other,
     resultSelector: @escaping (Output, Other.Output) -> Result
@@ -13,11 +14,12 @@ public extension Publisher {
     .init(upstream: self, second: other, resultSelector: resultSelector)
   }
 
-  ///  Merges three publishers into a single publisher by combining each value from self with the latest value from the second and third publisher, if any.
-  ///  - parameter other: A second publisher source.
-  ///  - parameter other1: A third publisher source.
-  ///  - parameter resultSelector: Function to invoke for each value from the self combined with the latest value from the second and third source, if any.
-  ///  - returns: A publisher containing the result of combining each value of the self with the latest value from the second and third publisher, if any, using the specified result selector function.
+  /// Merges three publishers into a single publisher by combining each value from self with the latest value from the second and third publisher, if any.
+  /// - Parameters:
+  ///   - other: A second publisher source.
+  ///   - other1: A third publisher source.
+  ///   - resultSelector: Function to invoke for each value from the self combined with the latest value from the second and third source, if any.
+  /// - Returns: A publisher containing the result of combining each value of the self with the latest value from the second and third publisher, if any, using the specified result selector function.
   func withLatestFrom<Other: Publisher, Other2: Publisher, Result>(
     _ other: Other,
     _ other1: Other2,
@@ -29,12 +31,13 @@ public extension Publisher {
     return .init(upstream: self, second: combined, resultSelector: resultSelector)
   }
 
-  ///  Merges four publishers into a single publisher by combining each value from self with the latest value from the second, third and fourth publisher, if any.
-  ///  - parameter other: A second publisher source.
-  ///  - parameter other1: A third publisher source.
-  ///  - parameter other2: A fourth publisher source.
-  ///  - parameter resultSelector: Function to invoke for each value from the self combined with the latest value from the second, third and fourth source, if any.
-  ///  - returns: A publisher containing the result of combining each value of the self with the latest value from the second, third and fourth publisher, if any, using the specified result selector function.
+  /// Merges four publishers into a single publisher by combining each value from self with the latest value from the second, third and fourth publisher, if any.
+  /// - Parameters:
+  ///   - other: A second publisher source.
+  ///   - other1: A third publisher source.
+  ///   - other2: A fourth publisher source.
+  ///   - resultSelector: Function to invoke for each value from the self combined with the latest value from the second, third and fourth source, if any.
+  /// - Returns: A publisher containing the result of combining each value of the self with the latest value from the second, third and fourth publisher, if any, using the specified result selector function.
   func withLatestFrom<Other: Publisher, Other2: Publisher, Other3: Publisher, Result>(
     _ other: Other,
     _ other1: Other2,
@@ -47,17 +50,18 @@ public extension Publisher {
     return .init(upstream: self, second: combined, resultSelector: resultSelector)
   }
 
-  ///  Upon an emission from self, emit the latest value from the second publisher, if any exists.
-  ///  - parameter other: A second publisher source.
-  ///  - returns: A publisher containing the latest value from the second publisher, if any.
+  /// Upon an emission from self, emit the latest value from the second publisher, if any exists.
+  /// - Parameter other: A second publisher source.
+  /// - Returns: A publisher containing the latest value from the second publisher, if any.
   func withLatestFrom<Other: Publisher>(_ other: Other) -> Publishers.WithLatestFrom<Self, Other, Other.Output> {
     .init(upstream: self, second: other) { $1 }
   }
 
   /// Upon an emission from self, emit the latest value from the second and third publisher, if any exists.
-  /// - parameter other: A second publisher source.
-  /// - parameter other1: A third publisher source.
-  /// - returns: A publisher containing the latest value from the second and third publisher, if any.
+  /// - Parameters:
+  ///   - other: A second publisher source.
+  ///   - other1: A third publisher source.
+  /// - Returns: A publisher containing the latest value from the second and third publisher, if any.
   func withLatestFrom<Other: Publisher, Other1: Publisher>(
     _ other: Other,
     _ other1: Other1
@@ -67,10 +71,11 @@ public extension Publisher {
   }
 
   /// Upon an emission from self, emit the latest value from the second, third and forth publisher, if any exists.
-  /// - parameter other: A second publisher source.
-  /// - parameter other1: A third publisher source.
-  /// - parameter other2: A forth publisher source.
-  /// - returns: A publisher containing the latest value from the second, third and forth publisher, if any.
+  /// - Parameters:
+  ///   - other: A second publisher source.
+  ///   - other1: A third publisher source.
+  ///   - other2: A forth publisher source.
+  /// - Returns: A publisher containing the latest value from the second, third and forth publisher, if any.
   func withLatestFrom<Other: Publisher, Other1: Publisher, Other2: Publisher>(
     _ other: Other,
     _ other1: Other1,
