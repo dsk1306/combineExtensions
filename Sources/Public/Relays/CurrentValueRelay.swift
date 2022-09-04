@@ -73,8 +73,9 @@ private extension CurrentValueRelay {
     }
 
     func forceFinish() {
-      self.sink?.shouldForwardCompletion = true
-      self.sink?.receive(completion: .finished)
+      sink?.shouldForwardCompletion = true
+      sink?.receive(completion: .finished)
+      sink = nil
     }
 
     func request(_ demand: Subscribers.Demand) {
@@ -82,7 +83,7 @@ private extension CurrentValueRelay {
     }
 
     func cancel() {
-      sink = nil
+      forceFinish()
     }
 
   }

@@ -15,6 +15,7 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
   private var upstreamSubscription: Subscription?
   private let transformOutput: TransformOutput?
   private let transformFailure: TransformFailure?
+  private var upstreamIsCancelled = false
 
   // MARK: - Initialization
 
@@ -31,7 +32,15 @@ class Sink<Upstream: Publisher, Downstream: Subscriber>: Subscriber {
     self.buffer = DemandBuffer(subscriber: downstream)
     self.transformOutput = transformOutput
     self.transformFailure = transformFailure
-    upstream.subscribe(self)
+
+    // A subscription can only be cancelled once. The `upstreamIsCancelled` value is used to suppress a second call to cancel when the Sink is deallocated, when a sink receives completion, and when a custom operator like `withLatestFrom` calls `cancelUpstream()` manually.
+    upstream
+      .handleEvents(
+        receiveCancel: { [weak self] in
+          self?.upstreamIsCancelled = true
+        }
+      )
+      .subscribe(self)
   }
 
   deinit { cancelUpstream() }
@@ -93,6 +102,7 @@ extension Sink {
   }
 
   func cancelUpstream() {
+    guard upstreamIsCancelled == false else { return }
     upstreamSubscription.kill()
   }
 
