@@ -215,6 +215,8 @@ private extension Publishers.WithLatestFrom {
       otherSubscription?.cancel()
     }
 
+    deinit { cancel() }
+
   }
 
 }
