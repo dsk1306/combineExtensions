@@ -147,4 +147,194 @@ final class CurrentValueRelayTests: XCTestCase {
     XCTAssertEqual(values, ["initial", "1", "2", "3"])
   }
 
+  func test_storedObjectIsDeallocated_afterCancellables() {
+
+    final class ContainerClass {
+
+      static var receivedCompletion = false
+      static var receivedCancel = false
+
+      var cancellables = Set<AnyCancellable>()
+      let relay = CurrentValueRelay(StoredObject())
+
+      init() {
+        relay
+          .handleEvents(receiveCancel: {
+            Self.receivedCancel = true
+          })
+          .sink(
+            receiveCompletion: { _ in
+              Self.receivedCompletion = true
+            },
+            receiveValue: { _ in }
+          )
+          .store(in: &cancellables)
+      }
+
+    }
+
+    var container: ContainerClass? = ContainerClass()
+    XCTAssertFalse(ContainerClass.receivedCompletion)
+    XCTAssertFalse(StoredObject.storedObjectReleased)
+
+    container = nil
+    XCTAssertTrue(StoredObject.storedObjectReleased)
+    XCTAssertNil(container)
+    XCTAssertFalse(ContainerClass.receivedCompletion)
+    XCTAssertTrue(ContainerClass.receivedCancel)
+  }
+
+  func test_storedObjectIsDeallocated_beforeCancellables() {
+
+    final class ContainerClass {
+
+      static var receivedCompletion = false
+      static var receivedCancel = false
+
+      let relay = CurrentValueRelay(StoredObject())
+      var cancellables = Set<AnyCancellable>()
+
+      init() {
+        relay
+          .handleEvents(receiveCancel: {
+            Self.receivedCancel = true
+          })
+          .sink(
+            receiveCompletion: { _ in
+              Self.receivedCompletion = true
+            },
+            receiveValue: { _ in }
+          )
+          .store(in: &cancellables)
+      }
+
+    }
+
+    var container: ContainerClass? = ContainerClass()
+    XCTAssertFalse(ContainerClass.receivedCompletion)
+    XCTAssertFalse(StoredObject.storedObjectReleased)
+
+    container = nil
+    XCTAssertTrue(StoredObject.storedObjectReleased)
+    XCTAssertNil(container)
+    XCTAssertTrue(ContainerClass.receivedCompletion)
+    XCTAssertFalse(ContainerClass.receivedCancel)
+  }
+
+  func test_bothStoredObjectsAreDeallocated_beforeCancellables() {
+
+    final class ContainerClass {
+
+      static var receivedCompletion = false
+      static var receivedCancel = false
+
+      let relay = CurrentValueRelay(StoredObject())
+      let relay2 = CurrentValueRelay(StoredObject2())
+      var cancellables: Set<AnyCancellable>? = Set<AnyCancellable>()
+
+      init() {
+        relay
+          .withLatestFrom(relay2)
+          .handleEvents(receiveCancel: {
+            Self.receivedCancel = true
+          })
+          .sink(
+            receiveCompletion: { _ in
+              Self.receivedCompletion = true
+            },
+            receiveValue: { _ in }
+          )
+          .store(in: &cancellables!)
+      }
+
+    }
+
+    var container: ContainerClass? = ContainerClass()
+    XCTAssertFalse(ContainerClass.receivedCompletion)
+    XCTAssertFalse(StoredObject.storedObjectReleased)
+    XCTAssertFalse(StoredObject2.storedObjectReleased)
+
+    container = nil
+    XCTAssertTrue(StoredObject.storedObjectReleased)
+    XCTAssertTrue(StoredObject2.storedObjectReleased)
+    XCTAssertNil(container)
+  }
+
+  func test_bothStoredObjectsAreDeallocated_afterCancellables() {
+
+    final class ContainerClass {
+
+      static var receivedCompletion = false
+      static var receivedCancel = false
+
+      var cancellables: Set<AnyCancellable>? = Set<AnyCancellable>()
+      let relay = CurrentValueRelay(StoredObject())
+      let relay2 = CurrentValueRelay(StoredObject2())
+
+      init() {
+        relay
+          .withLatestFrom(relay2)
+          .handleEvents(receiveCancel: {
+            Self.receivedCancel = true
+          })
+          .sink(
+            receiveCompletion: { _ in
+              Self.receivedCompletion = true
+            },
+            receiveValue: { _ in }
+          )
+          .store(in: &cancellables!)
+      }
+
+    }
+
+    var container: ContainerClass? = ContainerClass()
+    XCTAssertFalse(ContainerClass.receivedCompletion)
+    XCTAssertFalse(StoredObject.storedObjectReleased)
+    XCTAssertFalse(StoredObject2.storedObjectReleased)
+
+    container = nil
+    XCTAssertTrue(StoredObject.storedObjectReleased)
+    XCTAssertTrue(StoredObject2.storedObjectReleased)
+    XCTAssertNil(container)
+  }
+
+}
+
+// MARK: - StoredObject
+
+private extension CurrentValueRelayTests {
+
+  final class StoredObject {
+
+    static var storedObjectReleased = false
+
+    let value = 10
+
+    init() {
+      Self.storedObjectReleased = false
+    }
+
+    deinit {
+      Self.storedObjectReleased = true
+    }
+
+  }
+
+  final class StoredObject2 {
+
+    static var storedObjectReleased = false
+
+    let value = 20
+
+    init() {
+      Self.storedObjectReleased = false
+    }
+
+    deinit {
+      Self.storedObjectReleased = true
+    }
+
+  }
+
 }
