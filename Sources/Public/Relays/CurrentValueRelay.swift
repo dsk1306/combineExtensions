@@ -1,9 +1,10 @@
 import Combine
 
 /// A relay that wraps a single value and publishes a new element whenever the value changes.
+///
 /// Unlike its subject-counterpart, it may only accept values, and only sends a finishing event on deallocation.
 /// It cannot send a failure event.
-/// - note: Unlike `PassthroughRelay`, `CurrentValueRelay` maintains a buffer of the most recently published value.
+/// - Note: Unlike `PassthroughRelay`, `CurrentValueRelay` maintains a buffer of the most recently published value.
 public final class CurrentValueRelay<Output>: Relay {
 
   // MARK: - Properties
@@ -16,7 +17,7 @@ public final class CurrentValueRelay<Output>: Relay {
   // MARK: - Initialization
 
   /// Create a new relay.
-  /// - parameter value: Initial value for the relay.
+  /// - Parameter value: Initial value for the relay.
   public init(_ value: Output) {
     storage = .init(value)
   }
@@ -29,7 +30,7 @@ public final class CurrentValueRelay<Output>: Relay {
   // MARK: - Public Methods
 
   /// Relay a value to downstream subscribers.
-  /// - parameter value: A new value.
+  /// - Parameter value: A new value.
   public func accept(_ value: Output) {
     storage.send(value)
   }

@@ -1,6 +1,7 @@
 import Combine
 
 /// A publisher that exposes a method for outside callers to publish values.
+///
 /// It is identical to a `Subject`, but it cannot publish a finish event (until it's deallocated).
 public protocol Relay: Publisher where Failure == Never {
 
@@ -11,8 +12,8 @@ public protocol Relay: Publisher where Failure == Never {
   func accept(_ value: Output)
 
   /// Attaches the specified publisher to this relay.
-  /// - parameter publisher: An infallible publisher with the relay's `Output` type.
-  /// - returns: `AnyCancellable`.
+  /// - Parameter publisher: An infallible publisher with the relay's `Output` type.
+  /// - Returns: `AnyCancellable`.
   func subscribe<P: Publisher>(_ publisher: P) -> AnyCancellable where P.Failure == Failure, P.Output == Output
 
 }
@@ -31,8 +32,8 @@ public extension Relay where Output == Void {
 public extension Publisher where Failure == Never {
 
   /// Attaches the specified relay to this publisher.
-  /// - parameter relay: Relay to attach to this publisher.
-  /// - returns: `AnyCancellable`.
+  /// - Parameter relay: Relay to attach to this publisher.
+  /// - Returns: `AnyCancellable`.
   func subscribe<R: Relay>(_ relay: R) -> AnyCancellable where R.Output == Output {
     relay.subscribe(self)
   }
