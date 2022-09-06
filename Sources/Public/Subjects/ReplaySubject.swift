@@ -2,6 +2,7 @@ import Combine
 import Foundation
 
 /// A `ReplaySubject` is a subject that can buffer one or more values. It stores value events, up to its `bufferSize` in a first-in-first-out manner and then replays it to future subscribers and also forwards completion events.
+///
 /// The implementation borrows heavily from [Entwine’s](https://github.com/tcldr/Entwine/blob/b839c9fcc7466878d6a823677ce608da998b95b9/Sources/Entwine/Operators/ReplaySubject.swift).
 public final class ReplaySubject<Output, Failure: Error>: Subject {
 
@@ -25,7 +26,7 @@ public final class ReplaySubject<Output, Failure: Error>: Subject {
 
   // MARK: - Initialization
 
-  /// Create a `ReplaySubject`, buffering up to `bufferSize` values and replaying them to new subscribers.
+  /// Creates a `ReplaySubject`, buffering up to `bufferSize` values and replaying them to new subscribers.
   /// - Parameter bufferSize: The maximum number of value events to buffer and replay to all future subscribers.
   public init(bufferSize: Int) {
     self.bufferSize = bufferSize

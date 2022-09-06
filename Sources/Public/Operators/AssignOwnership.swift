@@ -5,14 +5,9 @@ public extension Publisher where Self.Failure == Never {
   /// Assigns a publisher’s output to a property of an object.
   /// - Parameters:
   ///   - keyPath: A key path that indicates the property to assign.
-  ///   - object: The object that contains the property.
-  ///             The subscriber assigns the object’s property every time it receives a new value.
-  ///   - ownership: The retainment / ownership strategy for the object.
-  ///                The default value is `strong`.
-  /// - Returns:
-  /// An `AnyCancellable` instance.
-  /// Call `cancel()` on this instance when you no longer want the publisher to automatically assign the property.
-  /// Deinitializing this instance will also cancel automatic assignment.
+  ///   - object: The object that contains the property. The subscriber assigns the object’s property every time it receives a new value.
+  ///   - ownership: The retainment / ownership strategy for the object. The default value is `strong`.
+  /// - Returns: An `AnyCancellable` instance. Call `cancel()` on this instance when you no longer want the publisher to automatically assign the property. Deinitializing this instance will also cancel automatic assignment.
   func assign<Root: AnyObject>(
     to keyPath: ReferenceWritableKeyPath<Root, Self.Output>,
     on object: Root,
@@ -32,17 +27,14 @@ public extension Publisher where Self.Failure == Never {
     }
   }
 
-  /// Assigns each element from a Publisher to properties of the provided objects.
+  /// Assigns each element from a `Publisher` to properties of the provided objects.
   /// - Parameters:
   ///   - keyPath1: The key path of the first property to assign.
   ///   - object1: The first object on which to assign the value.
   ///   - keyPath2: The key path of the second property to assign.
   ///   - object2: The second object on which to assign the value.
-  ///   - ownership: The retainment / ownership strategy for the object.
-  ///                The default value is `strong`.
-  /// - Returns:
-  /// A cancellable instance; used when you end assignment of the received value.
-  /// Deallocation of the result will tear down the subscription stream.
+  ///   - ownership: The retainment / ownership strategy for the object. The default value is `strong`.
+  /// - Returns: An `AnyCancellable` instance. Call `cancel()` on this instance when you no longer want the publisher to automatically assign the property. Deinitializing this instance will also cancel automatic assignment.
   func assign<Root1: AnyObject, Root2: AnyObject>(
     to keyPath1: ReferenceWritableKeyPath<Root1, Output>, on object1: Root1,
     and keyPath2: ReferenceWritableKeyPath<Root2, Output>, on object2: Root2,
@@ -64,7 +56,7 @@ public extension Publisher where Self.Failure == Never {
     }
   }
 
-  /// Assigns each element from a Publisher to properties of the provided objects.
+  /// Assigns each element from a `Publisher` to properties of the provided objects.
   /// - Parameters:
   ///   - keyPath1: The key path of the first property to assign.
   ///   - object1: The first object on which to assign the value.
@@ -72,11 +64,8 @@ public extension Publisher where Self.Failure == Never {
   ///   - object2: The second object on which to assign the value.
   ///   - keyPath3: The key path of the third property to assign.
   ///   - object3: The third object on which to assign the value.
-  ///   - ownership: The retainment / ownership strategy for the object.
-  ///                The default value is `strong`.
-  /// - Returns:
-  /// A cancellable instance; used when you end assignment of the received value.
-  /// Deallocation of the result will tear down the subscription stream.
+  ///   - ownership: The retainment / ownership strategy for the object. The default value is `strong`.
+  /// - Returns: An `AnyCancellable` instance. Call `cancel()` on this instance when you no longer want the publisher to automatically assign the property. Deinitializing this instance will also cancel automatic assignment.
   func assign<Root1: AnyObject, Root2: AnyObject, Root3: AnyObject>(
     to keyPath1: ReferenceWritableKeyPath<Root1, Output>, on object1: Root1,
     and keyPath2: ReferenceWritableKeyPath<Root2, Output>, on object2: Root2,

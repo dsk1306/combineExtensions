@@ -2,6 +2,7 @@ import Combine
 import class Foundation.NSRecursiveLock
 
 /// A buffer responsible for managing the demand of a downstream subscriber for an upstream publisher.
+///
 /// It buffers values and completion events and forwards them dynamically according to the demand requested by the downstream.
 /// In a sense, the subscription only relays the requests for demand, as well the events emitted by the upstream — to this buffer, which manages the entire behavior and backpressure contract.
 final class DemandBuffer<S: Subscriber> {
@@ -17,7 +18,7 @@ final class DemandBuffer<S: Subscriber> {
   // MARK: - Initialization
 
   /// Initialize a new demand buffer for a provided downstream subscriber.
-  /// - parameter subscriber: The downstream subscriber demanding events.
+  /// - Parameter subscriber: The downstream subscriber demanding events.
   init(subscriber: S) {
     self.subscriber = subscriber
   }
@@ -29,11 +30,10 @@ final class DemandBuffer<S: Subscriber> {
 extension DemandBuffer {
 
   /// Buffer an upstream value to later be forwarded to the downstream subscriber, once it demands it.
-  /// - parameter value: Upstream value to buffer.
-  /// - returns: The demand fulfilled by the bufferr.
+  /// - Parameter value: Upstream value to buffer.
+  /// - Returns: The demand fulfilled by the buffer.
   func buffer(value: S.Input) -> Subscribers.Demand {
-    precondition(self.completion == nil,
-                 "How could a completed publisher sent values?! Beats me 🤷‍♂️")
+    precondition(self.completion == nil, "How could a completed publisher sent values?! Beats me 🤷‍♂️")
     lock.lock()
     defer { lock.unlock() }
 
@@ -47,8 +47,9 @@ extension DemandBuffer {
   }
 
   /// Complete the demand buffer with an upstream completion event.
-  /// This method will deplete the buffer immediately, based on the currently accumulated demand, and relay the completion event down as soon as demand is fulfilled.
-  /// - parameter completion: Completion event.
+  ///
+  /// - Note: This method will deplete the buffer immediately, based on the currently accumulated demand, and relay the completion event down as soon as demand is fulfilled.
+  /// - Parameter completion: Completion event.
   func complete(completion: Subscribers.Completion<S.Failure>) {
     precondition(
       self.completion == nil,
@@ -60,7 +61,8 @@ extension DemandBuffer {
   }
 
   /// Signal to the buffer that the downstream requested new demand.
-  /// - note: The buffer will attempt to flush as many events rqeuested by the downstream at this point.
+  ///
+  /// - Note: The buffer will attempt to flush as many events rqeuested by the downstream at this point.
   func demand(_ demand: Subscribers.Demand) -> Subscribers.Demand {
     flush(adding: demand)
   }
@@ -72,8 +74,9 @@ extension DemandBuffer {
 private extension DemandBuffer {
 
   /// Flush buffered events to the downstream based on the current state of the downstream's demand.
-  /// - parameter newDemand: The new demand to add. If `nil`, the flush isn't the result of an explicit demand change.
-  /// - note: After fulfilling the downstream's request, if completion has already occured, the buffer will be cleared and the completion event will be sent to the downstream subscriber.
+  ///
+  /// - Note: After fulfilling the downstream's request, if completion has already occured, the buffer will be cleared and the completion event will be sent to the downstream subscriber.
+  /// - Parameter newDemand: The new demand to add. If `nil`, the flush isn't the result of an explicit demand change.
   @discardableResult
   private func flush(adding newDemand: Subscribers.Demand? = nil) -> Subscribers.Demand {
     lock.lock()
@@ -127,7 +130,7 @@ private extension DemandBuffer {
 extension Subscription {
 
   /// Request demand if it's not empty.
-  /// - parameter demand: Requested demand.
+  /// - Parameter demand: Requested demand.
   func requestIfNeeded(_ demand: Subscribers.Demand) {
     guard demand > .none else { return }
     request(demand)

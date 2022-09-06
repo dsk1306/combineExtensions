@@ -1,9 +1,10 @@
 import Combine
 
 /// A relay that broadcasts values to downstream subscribers.
+///
 /// Unlike its subject-counterpart, it may only accept values, and only sends a finishing event on deallocation.
 /// It cannot send a failure event.
-/// - note: Unlike CurrentValueRelay, a PassthroughRelay doesn’t have an initial value or a buffer of the most recently-published value.
+/// - Note: Unlike CurrentValueRelay, a PassthroughRelay doesn’t have an initial value or a buffer of the most recently-published value.
 public final class PassthroughRelay<Output>: Relay {
 
   // MARK: - Properties
@@ -26,7 +27,7 @@ public final class PassthroughRelay<Output>: Relay {
   // MARK: - Public Methods
 
   /// Relay a value to downstream subscribers.
-  /// - parameter value: A new value.
+  /// - Parameter value: A new value.
   public func accept(_ value: Output) {
     storage.send(value)
   }
