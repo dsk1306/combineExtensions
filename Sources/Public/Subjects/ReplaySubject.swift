@@ -5,157 +5,157 @@ import Foundation
 ///
 /// The implementation borrows heavily from [Entwine’s](https://github.com/tcldr/Entwine/blob/b839c9fcc7466878d6a823677ce608da998b95b9/Sources/Entwine/Operators/ReplaySubject.swift).
 public final class ReplaySubject<Output, Failure: Error>: Subject {
-
-  // MARK: - Typealiases
-
-  public typealias Output = Output
-  public typealias Failure = Failure
-
-  // MARK: - Properties
-
-  private let bufferSize: Int
-  private var buffer = [Output]()
-
-  // Keeping track of all live subscriptions, so `send` events can be forwarded to them.
-  private(set) var subscriptions = [Subscription<AnySubscriber<Output, Failure>>]()
-
-  private var completion: Subscribers.Completion<Failure>?
-  private var isActive: Bool { completion == nil }
-
-  private let lock = NSRecursiveLock()
-
-  // MARK: - Initialization
-
-  /// Creates a `ReplaySubject`, buffering up to `bufferSize` values and replaying them to new subscribers.
-  /// - Parameter bufferSize: The maximum number of value events to buffer and replay to all future subscribers.
-  public init(bufferSize: Int) {
-    self.bufferSize = bufferSize
-  }
-
-  // MARK: - Public Methods
-
-  public func send(_ value: Output) {
-    let subscriptions: [Subscription<AnySubscriber<Output, Failure>>]
-
-    do {
-      lock.lock()
-      defer { lock.unlock() }
-
-      guard isActive else { return }
-
-      buffer.append(value)
-      if buffer.count > bufferSize {
-        buffer.removeFirst()
-      }
-
-      subscriptions = self.subscriptions
+    
+    // MARK: - Typealiases
+    
+    public typealias Output = Output
+    public typealias Failure = Failure
+    
+    // MARK: - Properties
+    
+    private let bufferSize: Int
+    private var buffer = [Output]()
+    
+    // Keeping track of all live subscriptions, so `send` events can be forwarded to them.
+    private(set) var subscriptions = [Subscription<AnySubscriber<Output, Failure>>]()
+    
+    private var completion: Subscribers.Completion<Failure>?
+    private var isActive: Bool { completion == nil }
+    
+    private let lock = NSRecursiveLock()
+    
+    // MARK: - Initialization
+    
+    /// Creates a `ReplaySubject`, buffering up to `bufferSize` values and replaying them to new subscribers.
+    /// - Parameter bufferSize: The maximum number of value events to buffer and replay to all future subscribers.
+    public init(bufferSize: Int) {
+        self.bufferSize = bufferSize
     }
-
-    subscriptions.forEach { $0.forwardValueToBuffer(value) }
-  }
-
-  public func send(completion: Subscribers.Completion<Failure>) {
-    let subscriptions: [Subscription<AnySubscriber<Output, Failure>>]
-
-    do {
-      lock.lock()
-      defer { lock.unlock() }
-
-      guard isActive else { return }
-
-      self.completion = completion
-
-      subscriptions = self.subscriptions
+    
+    // MARK: - Public Methods
+    
+    public func send(_ value: Output) {
+        let subscriptions: [Subscription<AnySubscriber<Output, Failure>>]
+        
+        do {
+            lock.lock()
+            defer { lock.unlock() }
+            
+            guard isActive else { return }
+            
+            buffer.append(value)
+            if buffer.count > bufferSize {
+                buffer.removeFirst()
+            }
+            
+            subscriptions = self.subscriptions
+        }
+        
+        subscriptions.forEach { $0.forwardValueToBuffer(value) }
     }
-
-    subscriptions.forEach { $0.forwardCompletionToBuffer(completion) }
-
-    lock.lock()
-    defer { self.lock.unlock() }
-    self.subscriptions.removeAll()
-  }
-
-  public func send(subscription: Combine.Subscription) {
-    subscription.request(.unlimited)
-  }
-
-  public func receive<Subscriber: Combine.Subscriber>(subscriber: Subscriber) where Failure == Subscriber.Failure, Output == Subscriber.Input {
-    let subscriberIdentifier = subscriber.combineIdentifier
-
-    let subscription = Subscription(downstream: AnySubscriber(subscriber)) { [weak self] in
-      self?.completeSubscriber(withIdentifier: subscriberIdentifier)
+    
+    public func send(completion: Subscribers.Completion<Failure>) {
+        let subscriptions: [Subscription<AnySubscriber<Output, Failure>>]
+        
+        do {
+            lock.lock()
+            defer { lock.unlock() }
+            
+            guard isActive else { return }
+            
+            self.completion = completion
+            
+            subscriptions = self.subscriptions
+        }
+        
+        subscriptions.forEach { $0.forwardCompletionToBuffer(completion) }
+        
+        lock.lock()
+        defer { self.lock.unlock() }
+        self.subscriptions.removeAll()
     }
-
-    do {
-      lock.lock()
-      defer { lock.unlock() }
-
-      subscription.replay(buffer, completion: completion)
-      subscriptions.append(subscription)
+    
+    public func send(subscription: Combine.Subscription) {
+        subscription.request(.unlimited)
     }
-
-    subscriber.receive(subscription: subscription)
-  }
-
+    
+    public func receive<Subscriber: Combine.Subscriber>(subscriber: Subscriber) where Failure == Subscriber.Failure, Output == Subscriber.Input {
+        let subscriberIdentifier = subscriber.combineIdentifier
+        
+        let subscription = Subscription(downstream: AnySubscriber(subscriber)) { [weak self] in
+            self?.completeSubscriber(withIdentifier: subscriberIdentifier)
+        }
+        
+        do {
+            lock.lock()
+            defer { lock.unlock() }
+            
+            subscription.replay(buffer, completion: completion)
+            subscriptions.append(subscription)
+        }
+        
+        subscriber.receive(subscription: subscription)
+    }
+    
 }
 
 // MARK: - Private Methods
 
 private extension ReplaySubject {
-
-  func completeSubscriber(withIdentifier subscriberIdentifier: CombineIdentifier) {
-    lock.lock()
-    defer { self.lock.unlock() }
-
-    self.subscriptions.removeAll { $0.innerSubscriberIdentifier == subscriberIdentifier }
-  }
-
+    
+    func completeSubscriber(withIdentifier subscriberIdentifier: CombineIdentifier) {
+        lock.lock()
+        defer { self.lock.unlock() }
+        
+        self.subscriptions.removeAll { $0.innerSubscriberIdentifier == subscriberIdentifier }
+    }
+    
 }
 
 // MARK: - Subscription
 
 extension ReplaySubject {
-
-  final class Subscription<Downstream: Subscriber>: Combine.Subscription where Output == Downstream.Input, Failure == Downstream.Failure {
-
-    private var demandBuffer: DemandBuffer<Downstream>?
-    private var cancellationHandler: (() -> Void)?
-
-    fileprivate let innerSubscriberIdentifier: CombineIdentifier
-
-    init(downstream: Downstream, cancellationHandler: (() -> Void)?) {
-      self.demandBuffer = DemandBuffer(subscriber: downstream)
-      self.innerSubscriberIdentifier = downstream.combineIdentifier
-      self.cancellationHandler = cancellationHandler
+    
+    final class Subscription<Downstream: Subscriber>: Combine.Subscription where Output == Downstream.Input, Failure == Downstream.Failure {
+        
+        private var demandBuffer: DemandBuffer<Downstream>?
+        private var cancellationHandler: (() -> Void)?
+        
+        fileprivate let innerSubscriberIdentifier: CombineIdentifier
+        
+        init(downstream: Downstream, cancellationHandler: (() -> Void)?) {
+            self.demandBuffer = DemandBuffer(subscriber: downstream)
+            self.innerSubscriberIdentifier = downstream.combineIdentifier
+            self.cancellationHandler = cancellationHandler
+        }
+        
+        func replay(_ buffer: [Output], completion: Subscribers.Completion<Failure>?) {
+            buffer.forEach(forwardValueToBuffer)
+            
+            if let completion = completion {
+                forwardCompletionToBuffer(completion)
+            }
+        }
+        
+        func forwardValueToBuffer(_ value: Output) {
+            _ = demandBuffer?.buffer(value: value)
+        }
+        
+        func forwardCompletionToBuffer(_ completion: Subscribers.Completion<Failure>) {
+            demandBuffer?.complete(completion: completion)
+        }
+        
+        func request(_ demand: Subscribers.Demand) {
+            _ = demandBuffer?.demand(demand)
+        }
+        
+        func cancel() {
+            cancellationHandler?()
+            cancellationHandler = nil
+            
+            demandBuffer = nil
+        }
+        
     }
-
-    func replay(_ buffer: [Output], completion: Subscribers.Completion<Failure>?) {
-      buffer.forEach(forwardValueToBuffer)
-
-      if let completion = completion {
-        forwardCompletionToBuffer(completion)
-      }
-    }
-
-    func forwardValueToBuffer(_ value: Output) {
-      _ = demandBuffer?.buffer(value: value)
-    }
-
-    func forwardCompletionToBuffer(_ completion: Subscribers.Completion<Failure>) {
-      demandBuffer?.complete(completion: completion)
-    }
-
-    func request(_ demand: Subscribers.Demand) {
-      _ = demandBuffer?.demand(demand)
-    }
-
-    func cancel() {
-      cancellationHandler?()
-      cancellationHandler = nil
-
-      demandBuffer = nil
-    }
-
-  }
-
+    
 }
