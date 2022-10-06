@@ -19,7 +19,7 @@ jobs:
         include:
           - platform: iOS
             sdk: iphonesimulator
-            destination: "name=iPhone 13"
+            destination: "name=iPhone 14"
 
           - platform: iPad
             sdk: iphonesimulator
@@ -29,20 +29,19 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       
-    - name: Set xCode 13.4
+    - name: Set Xcode Version
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '13.4'
 
-    - name: Run tests and generate lcov file
+    - name: Run Tests and Generate lcov File
       run: |
         swift test --enable-code-coverage
         xcrun llvm-cov report $BUILD_FOLDER -instr-profile $PROFDATA_FOLDER
         xcrun llvm-cov export -format="lcov" $BUILD_FOLDER -instr-profile $PROFDATA_FOLDER > $LCOV_PATH
       
-    - name: Upload coverage data to Codecov
+    - name: Upload Coverage Data to Codecov
       uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ env.LCOV_PATH }}
-        verbose: true
