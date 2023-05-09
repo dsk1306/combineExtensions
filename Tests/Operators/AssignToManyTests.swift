@@ -1,6 +1,6 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class AssignToManyTests: XCTestCase {
     

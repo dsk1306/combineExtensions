@@ -1,6 +1,6 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class CatchWithHandlerTests: XCTestCase {
     
@@ -35,9 +35,9 @@ final class CatchWithHandlerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        source = PassthroughSubject<Int, TestError>()
+        source = .init()
+        subscriptions = .init()
         value = nil
-        subscriptions = CombineCancellable()
         error = nil
         finished = nil
     }
@@ -125,18 +125,6 @@ final class CatchWithHandlerTests: XCTestCase {
         XCTAssertEqual(testValue2, value)
         XCTAssertNil(handledError)
         XCTAssertTrue(finished ?? false)
-    }
-    
-}
-
-// MARK: - Test Error
-
-private extension CatchWithHandlerTests {
-    
-    enum TestError: Error {
-        
-        case test
-        
     }
     
 }

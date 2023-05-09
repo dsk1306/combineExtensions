@@ -20,10 +20,10 @@ final class CombineCancellableTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        cancellable = CombineCancellable()
-        source1 = Source()
-        source2 = Source()
-        source3 = Source()
+        cancellable = .init()
+        source1 = .init()
+        source2 = .init()
+        source3 = .init()
     }
     
     // MARK: - Tests
@@ -72,18 +72,6 @@ final class CombineCancellableTests: XCTestCase {
         XCTAssertTrue(source1Cancelled)
         XCTAssertTrue(source2Cancelled)
         XCTAssertTrue(source3Cancelled)
-    }
-    
-}
-
-// MARK: - Test Error
-
-private extension CombineCancellableTests {
-    
-    enum TestError: Error {
-        
-        case test
-        
     }
     
 }

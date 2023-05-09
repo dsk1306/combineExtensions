@@ -1,16 +1,16 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class WithLatestFromTests: XCTestCase {
     
     // MARK: - Properties
     
-    var subscription: AnyCancellable!
+    private var subscription: AnyCancellable!
     
     // We have to hold a reference to the subscription or the
     // publisher will get deallocated and canceled
-    var demandSubscription: Subscription!
+    private var demandSubscription: Subscription!
     
     // MARK: - Tests
     

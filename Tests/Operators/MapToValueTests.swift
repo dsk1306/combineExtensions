@@ -1,6 +1,5 @@
 import Combine
-import CombineExtensions
-import Foundation
+@testable import CombineExtensions
 import XCTest
 
 final class MapToValueTests: XCTestCase {
@@ -25,7 +24,7 @@ final class MapToValueTests: XCTestCase {
         
         subscription = subject
             .mapToValue(2)
-            .sink(receiveValue: { result = $0 })
+            .sink { result = $0 }
         
         subject.send(1)
         XCTAssertEqual(result, 2)
@@ -48,7 +47,7 @@ final class MapToValueTests: XCTestCase {
         subject.send(2)
         subject.send(1)
         
-        wait(for: [expectation], timeout: 3)
+        wait(for: expectation)
     }
     
     func test_mapTo_void() {
@@ -59,13 +58,12 @@ final class MapToValueTests: XCTestCase {
             .mapToValue(Void())
             .sink { element in
                 XCTAssertTrue(type(of: element) == Void.self)
-                
                 expectation.fulfill()
             }
         
         subject.send(1)
         
-        wait(for: [expectation], timeout: 3)
+        wait(for: expectation)
     }
     
     func test_mapTo_optionalType() {
@@ -76,7 +74,7 @@ final class MapToValueTests: XCTestCase {
         
         subscription = subject
             .mapToValue(value)
-            .sink(receiveValue: { result = $0 })
+            .sink { result = $0 }
         
         subject.send(1)
         XCTAssertEqual(result, nil)
@@ -96,7 +94,7 @@ final class MapToValueTests: XCTestCase {
         
         subscription = combinedPublisher
             .map { "\($0)" }
-            .sink(receiveValue: { result = $0 })
+            .sink { result = $0 }
         
         fooSubject.send(5)
         barSubject.send(6)
@@ -119,16 +117,12 @@ final class MapToValueTests: XCTestCase {
         subject.send("test 2")
         subject.send("test 3")
         
-        wait(for: [expectation], timeout: 3)
+        wait(for: expectation)
     }
     
     func test_mapToVoid_withError() {
         let expectation = XCTestExpectation()
         expectation.expectedFulfillmentCount = 3
-        
-        enum TestError: Error {
-            case example
-        }
         
         let subject = PassthroughSubject<String, Error>()
         subscription = subject
@@ -150,9 +144,9 @@ final class MapToValueTests: XCTestCase {
         subject.send("test 1")
         subject.send("test 2")
         subject.send("test 3")
-        subject.send(completion: .failure(TestError.example))
+        subject.send(completion: .failure(TestError.test))
         
-        wait(for: [expectation], timeout: 3)
+        wait(for: expectation)
     }
     
 }

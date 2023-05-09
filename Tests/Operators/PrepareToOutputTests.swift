@@ -1,6 +1,6 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class PrepareToOutputTests: XCTestCase {
     
@@ -12,6 +12,8 @@ final class PrepareToOutputTests: XCTestCase {
     // MARK: - Base Class
     
     override func setUp() {
+        super.setUp()
+
         cancelable1 = nil
         cancelable2 = nil
     }
@@ -39,19 +41,7 @@ final class PrepareToOutputTests: XCTestCase {
             }
         
         subject.accept()
-        wait(for: [expectation1, expectation2], timeout: Constant.timeout)
-    }
-    
-}
-
-// MARK: - Constants
-
-private extension PrepareToOutputTests {
-    
-    enum Constant {
-        
-        static let timeout: TimeInterval = 5
-        
+        wait(for: [expectation1, expectation2], timeout: TestConstant.expectationTimeout)
     }
     
 }

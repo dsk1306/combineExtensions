@@ -1,9 +1,12 @@
 import Combine
-import CombineExtensions
-import Foundation
+@testable import CombineExtensions
 import XCTest
 
 final class AsyncSinkTests: XCTestCase {
+
+    // MARK: - Typealiases
+
+    private typealias CompletionHandler = (Subscribers.Completion<TestError>) -> Void
 
     // MARK: - Properties
 
@@ -15,6 +18,15 @@ final class AsyncSinkTests: XCTestCase {
     private var source = PassthroughSubject<Int, TestError>()
     private var neverFailureSource = PassthroughSubject<Int, Never>()
 
+    private lazy var completionHandler: CompletionHandler = { [weak self] in
+        switch $0 {
+        case .finished:
+            self?.finished = true
+        case .failure(let failure):
+            self?.error = failure
+        }
+    }
+
     // MARK: - Base Class
 
     override func setUp() {
@@ -25,8 +37,8 @@ final class AsyncSinkTests: XCTestCase {
         error = nil
         finished = nil
 
-        source = PassthroughSubject()
-        neverFailureSource = PassthroughSubject()
+        source = .init()
+        neverFailureSource = .init()
     }
 
     // MARK: - Tests
@@ -36,9 +48,7 @@ final class AsyncSinkTests: XCTestCase {
 
         subscription = source
             .sink(
-                receiveCompletion: { [weak self] in
-                    self?.handle(completion: $0)
-                },
+                receiveCompletion: completionHandler,
                 receiveValue: { [weak self] in
                     await self?.assign(value: $0, expectation: sinkExpectation)
                 }
@@ -63,9 +73,7 @@ final class AsyncSinkTests: XCTestCase {
 
         subscription = source
             .sink(
-                receiveCompletion: { [weak self] in
-                    self?.handle(completion: $0)
-                },
+                receiveCompletion: completionHandler,
                 receiveValue: { [weak self] in
                     await self?.assign(value: $0, expectation: sinkExpectation)
                 }
@@ -108,21 +116,12 @@ private extension AsyncSinkTests {
 
     func assign(value: Int, expectation: XCTestExpectation) async {
         do {
-            try await Task.sleep(nanoseconds: 500000000)
+            try await Task.sleep(nanoseconds: TestConstant.sleepTimeout)
             self.value = value
         } catch {
             self.error = .other(error)
         }
         expectation.fulfill()
-    }
-
-    func handle(completion: Subscribers.Completion<TestError>) {
-        switch completion {
-        case .finished:
-            finished = true
-        case .failure(let failure):
-            error = failure
-        }
     }
 
 }
