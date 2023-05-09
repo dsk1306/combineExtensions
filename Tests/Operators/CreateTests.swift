@@ -1,13 +1,13 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class CreateTests: XCTestCase {
     
     // MARK: - Properties
     
     private var cancelable: Cancellable?
-    private var completion: Subscribers.Completion<CreateTests.MyError>?
+    private var completion: Subscribers.Completion<TestError>?
     private var values = [String]()
     private var canceled = false
     private let allValues = ["Hello", "World", "What's", "Up?"]
@@ -15,6 +15,8 @@ final class CreateTests: XCTestCase {
     // MARK: - Base Class
     
     override func setUp() {
+        super.setUp()
+
         canceled = false
         values = []
         completion = nil
@@ -37,11 +39,11 @@ final class CreateTests: XCTestCase {
     func test_finished_limitedDemand() {
         let subscriber = makeSubscriber(demand: .max(2))
         
-        let publisher = AnyPublisher<String, MyError> { subscriber in
-            self.allValues.forEach { subscriber.send($0) }
+        let publisher = AnyPublisher<String, TestError> { [weak self] subscriber in
+            self?.allValues.forEach { subscriber.send($0) }
             subscriber.send(completion: .finished)
             
-            return AnyCancellable { [weak self] in
+            return AnyCancellable {
                 self?.canceled = true
             }
         }
@@ -70,7 +72,7 @@ final class CreateTests: XCTestCase {
         
         publisher.subscribe(subscriber)
         
-        XCTAssertEqual(completion, .failure(MyError.failure))
+        XCTAssertEqual(completion, .failure(TestError.test))
         XCTAssertTrue(canceled)
         XCTAssertEqual(values, allValues)
     }
@@ -81,7 +83,7 @@ final class CreateTests: XCTestCase {
         
         publisher.subscribe(subscriber)
         
-        XCTAssertEqual(completion, .failure(MyError.failure))
+        XCTAssertEqual(completion, .failure(TestError.test))
         XCTAssertTrue(canceled)
         XCTAssertEqual(values, Array(allValues.prefix(2)))
     }
@@ -92,14 +94,14 @@ final class CreateTests: XCTestCase {
         
         publisher.subscribe(subscriber)
         
-        XCTAssertEqual(completion, .failure(MyError.failure))
+        XCTAssertEqual(completion, .failure(TestError.test))
         XCTAssertTrue(canceled)
         XCTAssertTrue(values.isEmpty)
     }
     
     func test_manualCancelation() {
-        let publisher = AnyPublisher<String, Never>.create { _ in
-            AnyCancellable { [weak self] in self?.canceled = true }
+        let publisher = AnyPublisher<String, Never>.create { [weak self] _ in
+            AnyCancellable { self?.canceled = true }
         }
         
         cancelable = publisher.sink { _ in }
@@ -110,48 +112,36 @@ final class CreateTests: XCTestCase {
     
 }
 
-// MARK: - Private Helpers
+// MARK: - Helpers
 
 private extension CreateTests {
     
-    func makePublisher(fail: Bool = false) -> AnyPublisher<String, MyError> {
-        AnyPublisher<String, MyError>.create { subscriber in
-            self.allValues.forEach { subscriber.send($0) }
-            subscriber.send(completion: fail ? .failure(MyError.failure) : .finished)
+    func makePublisher(fail: Bool = false) -> AnyPublisher<String, TestError> {
+        AnyPublisher<String, TestError>.create { [weak self] subscriber in
+            self?.allValues.forEach { subscriber.send($0) }
+            subscriber.send(completion: fail ? .failure(.test) : .finished)
             
-            return AnyCancellable { [weak self] in
+            return AnyCancellable {
                 self?.canceled = true
             }
         }
         .eraseToAnyPublisher()
     }
     
-    func makeSubscriber(demand: Subscribers.Demand) -> AnySubscriber<String, MyError> {
+    func makeSubscriber(demand: Subscribers.Demand) -> AnySubscriber<String, TestError> {
         AnySubscriber(
             receiveSubscription: { subscription in
-                XCTAssertEqual("\(subscription)", "Create.Subscription<String, MyError>")
+                XCTAssertEqual("\(subscription)", "Create.Subscription<String, TestError>")
                 subscription.request(demand)
             },
-            receiveValue: { value in
-                self.values.append(value)
+            receiveValue: { [weak self] value in
+                self?.values.append(value)
                 return .none
             },
-            receiveCompletion: { finished in
-                self.completion = finished
+            receiveCompletion: { [weak self] finished in
+                self?.completion = finished
             }
         )
-    }
-    
-}
-
-// MARK: - MyError
-
-private extension CreateTests {
-    
-    enum MyError: Swift.Error {
-        
-        case failure
-        
     }
     
 }
