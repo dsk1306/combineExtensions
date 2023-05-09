@@ -7,9 +7,13 @@ final class AsyncSinkTests: XCTestCase {
 
     // MARK: - Properties
 
-    private var value: Int?
     private var subscription: AnyCancellable?
-    private var source = PassthroughSubject<Int, Never>()
+    private var value: Int?
+    private var error: TestError?
+    private var finished: Bool?
+
+    private var source = PassthroughSubject<Int, TestError>()
+    private var neverFailureSource = PassthroughSubject<Int, Never>()
 
     // MARK: - Base Class
 
@@ -18,25 +22,82 @@ final class AsyncSinkTests: XCTestCase {
 
         value = nil
         subscription = nil
+        error = nil
+        finished = nil
+
         source = PassthroughSubject()
+        neverFailureSource = PassthroughSubject()
     }
 
     // MARK: - Tests
 
-    func test_receiveValue() {
+    func test_sink_completion() throws {
         let sinkExpectation = expectation(description: #function)
 
         subscription = source
-            .sink { [weak self] in
-                await self?.updateValue(for: $0)
-                sinkExpectation.fulfill()
-            }
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.handle(completion: $0)
+                },
+                receiveValue: { [weak self] in
+                    await self?.assign(value: $0, expectation: sinkExpectation)
+                }
+            )
 
-        let testValue = 10
-        source.send(testValue)
-        wait(for: [sinkExpectation], timeout: Constant.timeout)
+        source.send(Constant.value)
+        wait(for: sinkExpectation)
 
-        XCTAssertEqual(value, testValue)
+        XCTAssertNil(error)
+        XCTAssertNil(finished)
+        XCTAssertEqual(value, Constant.value)
+
+        source.send(completion: .finished)
+
+        XCTAssertNil(error)
+        XCTAssertTrue(finished ?? false)
+        XCTAssertEqual(value, Constant.value)
+    }
+
+    func test_sink_error() throws {
+        let sinkExpectation = expectation(description: #function)
+
+        subscription = source
+            .sink(
+                receiveCompletion: { [weak self] in
+                    self?.handle(completion: $0)
+                },
+                receiveValue: { [weak self] in
+                    await self?.assign(value: $0, expectation: sinkExpectation)
+                }
+            )
+
+        source.send(Constant.value)
+        wait(for: sinkExpectation)
+
+        XCTAssertNil(error)
+        XCTAssertNil(finished)
+        XCTAssertEqual(value, Constant.value)
+
+        source.send(completion: .failure(.test))
+
+        XCTAssertNil(finished)
+        XCTAssertEqual(error, .test)
+        XCTAssertEqual(value, Constant.value)
+    }
+
+    func test_sink_neverFailure() {
+        let sinkExpectation = expectation(description: #function)
+
+        subscription = neverFailureSource.sink { [weak self] in
+            await self?.assign(value: $0, expectation: sinkExpectation)
+        }
+
+        neverFailureSource.send(Constant.value)
+        wait(for: sinkExpectation)
+
+        XCTAssertNil(error)
+        XCTAssertNil(finished)
+        XCTAssertEqual(value, Constant.value)
     }
     
 }
@@ -45,9 +106,23 @@ final class AsyncSinkTests: XCTestCase {
 
 private extension AsyncSinkTests {
 
-    func updateValue(for value: Int) async {
-        try! await Task.sleep(nanoseconds: 500000000)
-        self.value = value
+    func assign(value: Int, expectation: XCTestExpectation) async {
+        do {
+            try await Task.sleep(nanoseconds: 500000000)
+            self.value = value
+        } catch {
+            self.error = .other(error)
+        }
+        expectation.fulfill()
+    }
+
+    func handle(completion: Subscribers.Completion<TestError>) {
+        switch completion {
+        case .finished:
+            finished = true
+        case .failure(let failure):
+            error = failure
+        }
     }
 
 }
@@ -58,7 +133,7 @@ private extension AsyncSinkTests {
 
     enum Constant {
 
-        static let timeout: TimeInterval = 5
+        static let value = 10
 
     }
 
