@@ -9,7 +9,20 @@ public extension Publisher {
     func sinkValue(valueHandler: @escaping ((Output) -> Void)) -> AnyCancellable {
         sink(receiveCompletion: { _ in }, receiveValue: valueHandler)
     }
-
+    
+    /// Attaches a subscriber with async closure-based behavior.
+    /// - Parameter valueHandler: The async closure to execute on completion.
+    /// - Returns: A cancellable instance, which you use when you end assignment of the received value. Deallocation of the result will tear down the subscription stream.
+    func sinkValue(valueHandler: @escaping ((Output) async -> Void)) -> AnyCancellable {
+        sink(
+            receiveCompletion: { _ in },
+            receiveValue: { output in
+                Task {
+                    await valueHandler(output)
+                }
+            }
+        )
+    }
     
     /// Attaches a subscriber with closure-based behavior.
     /// - Parameter completionHandler: The closure to execute on completion.
