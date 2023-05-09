@@ -1,12 +1,20 @@
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
 import XCTest
 
 final class ShareReplayTests: XCTestCase {
     
     // MARK: - Properties
     
-    private var subscriptions = Set<AnyCancellable>()
+    private var cancellable = CombineCancellable()
+
+    // MARK: - Base Class
+
+    override func setUp() {
+        super.setUp()
+
+        cancellable = .init()
+    }
     
     // MARK: - Tests
     
@@ -22,19 +30,19 @@ final class ShareReplayTests: XCTestCase {
             
             return AnyCancellable { }
         }
-            .share(replay: 0)
+        .share(replay: 0)
         
         publisher
-            .sink(receiveValue: { _ in })
-            .store(in: &subscriptions)
+            .sink { _ in }
+            .store(in: cancellable)
         
         publisher
-            .sink(receiveValue: { _ in })
-            .store(in: &subscriptions)
+            .sink { _ in }
+            .store(in: cancellable)
         
         publisher
-            .sink(receiveValue: { _ in })
-            .store(in: &subscriptions)
+            .sink { _ in }
+            .store(in: cancellable)
         
         XCTAssertEqual(subscribeCount, 1)
     }
@@ -48,8 +56,8 @@ final class ShareReplayTests: XCTestCase {
         var results = [Int]()
         
         publisher
-            .sink(receiveValue: { results.append($0) })
-            .store(in: &subscriptions)
+            .sink { results.append($0) }
+            .store(in: cancellable)
         
         subject.send(2)
         
@@ -66,8 +74,8 @@ final class ShareReplayTests: XCTestCase {
             .share(replay: 3)
         
         publisher
-            .sink(receiveValue: { results1.append($0) })
-            .store(in: &subscriptions)
+            .sink { results1.append($0) }
+            .store(in: cancellable)
         
         subject.send(1)
         subject.send(2)
@@ -75,8 +83,8 @@ final class ShareReplayTests: XCTestCase {
         subject.send(4)
         
         publisher
-            .sink(receiveValue: { results2.append($0) })
-            .store(in: &subscriptions)
+            .sink { results2.append($0) }
+            .store(in: cancellable)
         
         XCTAssertEqual(results1, [1, 2, 3, 4])
         XCTAssertEqual(results2, [2, 3, 4])
@@ -99,7 +107,7 @@ final class ShareReplayTests: XCTestCase {
                 receiveCompletion: { completions1.append($0) },
                 receiveValue: { results1.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         subject.send(1)
         subject.send(2)
@@ -112,7 +120,7 @@ final class ShareReplayTests: XCTestCase {
                 receiveCompletion: { completions2.append($0) },
                 receiveValue: { results2.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         XCTAssertEqual(results1, [1, 2, 3, 4])
         XCTAssertEqual(completions1, [.finished])
@@ -122,13 +130,13 @@ final class ShareReplayTests: XCTestCase {
     }
     
     func test_sharing_errorEvent() {
-        let subject = PassthroughSubject<Int, AnError>()
+        let subject = PassthroughSubject<Int, TestError>()
         
         var results1 = [Int]()
-        var completions1 = [Subscribers.Completion<AnError>]()
+        var completions1 = [Subscribers.Completion<TestError>]()
         
         var results2 = [Int]()
-        var completions2 = [Subscribers.Completion<AnError>]()
+        var completions2 = [Subscribers.Completion<TestError>]()
         
         let publisher = subject
             .share(replay: 3)
@@ -138,26 +146,26 @@ final class ShareReplayTests: XCTestCase {
                 receiveCompletion: { completions1.append($0) },
                 receiveValue: { results1.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         subject.send(1)
         subject.send(2)
         subject.send(3)
         subject.send(4)
-        subject.send(completion: .failure(.someError))
+        subject.send(completion: .failure(.test))
         
         publisher
             .sink(
                 receiveCompletion: { completions2.append($0) },
                 receiveValue: { results2.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         XCTAssertEqual(results1, [1, 2, 3, 4])
-        XCTAssertEqual(completions1, [.failure(.someError)])
+        XCTAssertEqual(completions1, [.failure(.test)])
         
         XCTAssertEqual(results2, [2, 3, 4])
-        XCTAssertEqual(completions2, [.failure(.someError)])
+        XCTAssertEqual(completions2, [.failure(.test)])
     }
     
     func test_sharing_noClassBasedPublisherRetain() {
@@ -174,12 +182,12 @@ final class ShareReplayTests: XCTestCase {
                 receiveCompletion: { completions.append($0) },
                 receiveValue: { results.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         source?.send(1)
         source?.send(completion: .finished)
-        
-        subscriptions.forEach({ $0.cancel() })
+
+        cancellable.cancel()
         stream = nil
         source = nil
         
@@ -202,7 +210,7 @@ final class ShareReplayTests: XCTestCase {
                 receiveCompletion: { completions.append($0) },
                 receiveValue: { results.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         subject.send(completion: .finished)
         subject.send(1)
@@ -212,10 +220,10 @@ final class ShareReplayTests: XCTestCase {
     }
     
     func test_errorWithNoReplay() {
-        let subject = PassthroughSubject<Int, AnError>()
+        let subject = PassthroughSubject<Int, TestError>()
         
         var results = [Int]()
-        var completions = [Subscribers.Completion<AnError>]()
+        var completions = [Subscribers.Completion<TestError>]()
         
         let publisher = subject
             .share(replay: 1)
@@ -225,13 +233,13 @@ final class ShareReplayTests: XCTestCase {
                 receiveCompletion: { completions.append($0) },
                 receiveValue: { results.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
-        subject.send(completion: .failure(.someError))
+        subject.send(completion: .failure(.test))
         subject.send(1)
         
         XCTAssertTrue(results.isEmpty)
-        XCTAssertEqual(completions, [.failure(.someError)])
+        XCTAssertEqual(completions, [.failure(.test)])
     }
     
     func test_sequentialUpstreamWithShareReplay() {
@@ -259,22 +267,10 @@ final class ShareReplayTests: XCTestCase {
                     valueReceived = true
                 }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         XCTAssertTrue(valueReceived)
         XCTAssertTrue(finishedReceived)
-    }
-    
-}
-
-// MARK: - AnError
-
-private extension ShareReplayTests {
-    
-    enum AnError: Error {
-        
-        case someError
-        
     }
     
 }
