@@ -25,7 +25,7 @@ final class SingleSinkTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        source = PassthroughSubject<Int, TestError>()
+        source = .init()
         value = nil
         subscription = nil
         error = nil
@@ -35,8 +35,9 @@ final class SingleSinkTests: XCTestCase {
     // MARK: - Tests
     
     func test_sinkReceiveValue() {
-        subscription = source
-            .sinkValue { [weak self] in self?.value = $0 }
+        subscription = source.sinkValue { [weak self] in
+            self?.value = $0
+        }
         
         let testValue = 10
         source.send(testValue)
@@ -50,14 +51,8 @@ final class SingleSinkTests: XCTestCase {
         XCTAssertNil(finished)
     }
     
-    func asyncAssign(value: Int) async throws {
-        try await Task.sleep(nanoseconds: 1 * 1_000_000_000)
-        self.value = value
-    }
-    
     func test_sinkReceiveCompletion_finished() {
-        subscription = source
-            .sinkCompletion(completionHandler: completionHandler)
+        subscription = source.sinkCompletion(completionHandler: completionHandler)
         
         source.send(completion: .finished)
         
@@ -67,8 +62,7 @@ final class SingleSinkTests: XCTestCase {
     }
     
     func test_sinkReceiveCompletion_failure() {
-        subscription = source
-            .sinkCompletion(completionHandler: completionHandler)
+        subscription = source.sinkCompletion(completionHandler: completionHandler)
         
         source.send(completion: .failure(TestError.test))
         XCTAssertNil(value)
@@ -77,8 +71,7 @@ final class SingleSinkTests: XCTestCase {
     }
     
     func test_sinkReceiveCompletion_value() {
-        subscription = source
-            .sinkCompletion(completionHandler: completionHandler)
+        subscription = source.sinkCompletion(completionHandler: completionHandler)
         
         source.send(10)
         
@@ -88,8 +81,7 @@ final class SingleSinkTests: XCTestCase {
     }
     
     func test_sinkReceiveFailure_finished() {
-        subscription = source
-            .sinkFailure(failureHandler: failureHandler)
+        subscription = source.sinkFailure(failureHandler: failureHandler)
         
         source.send(completion: .finished)
         
@@ -99,8 +91,7 @@ final class SingleSinkTests: XCTestCase {
     }
     
     func test_sinkReceiveFailure_failure() {
-        subscription = source
-            .sinkFailure(failureHandler: failureHandler)
+        subscription = source.sinkFailure(failureHandler: failureHandler)
         
         let testValue = TestError.test
         source.send(completion: .failure(testValue))
@@ -111,50 +102,13 @@ final class SingleSinkTests: XCTestCase {
     }
     
     func test_sinkReceiveFailure_value() {
-        subscription = source
-            .sinkFailure(failureHandler: failureHandler)
+        subscription = source.sinkFailure(failureHandler: failureHandler)
         
         source.send(10)
         
         XCTAssertNil(value)
         XCTAssertNil(finished)
         XCTAssertNil(error)
-    }
-    
-}
-
-// MARK: - Constants
-
-private extension SingleSinkTests {
-    
-    enum Constant {
-        
-        static let timeout: TimeInterval = 5
-        
-    }
-    
-}
-
-// MARK: - Test Error
-
-private extension SingleSinkTests {
-    
-    enum TestError: Error, Equatable {
-        
-        case test
-        case other(Error)
-        
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            switch (lhs, rhs) {
-            case (.test, .test):
-                return true
-            case (.other(let lhsError), .other(let rhsError)):
-                return lhsError.localizedDescription == rhsError.localizedDescription
-            default:
-                return false
-            }
-        }
-        
     }
     
 }
