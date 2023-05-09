@@ -1,16 +1,16 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class AssignOwnershipTests: XCTestCase {
     
     // MARK: - Properties
     
-    var subscription: AnyCancellable!
-    var value1 = 0
-    var value2 = 0
-    var value3 = 0
-    var subject: PassthroughSubject<Int, Never>!
+    private var subscription: AnyCancellable!
+    private var subject: PassthroughSubject<Int, Never>!
+    private var value1 = 0
+    private var value2 = 0
+    private var value3 = 0
     
     // MARK: - Base Class
     
@@ -18,7 +18,7 @@ final class AssignOwnershipTests: XCTestCase {
         super.setUp()
         
         subscription = nil
-        subject = PassthroughSubject<Int, Never>()
+        subject = .init()
         value1 = 0
         value2 = 0
         value3 = 0
