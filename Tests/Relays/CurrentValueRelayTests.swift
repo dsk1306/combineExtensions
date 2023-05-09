@@ -1,21 +1,21 @@
 import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
 
 final class CurrentValueRelayTests: XCTestCase {
     
     // MARK: - Properties
     
-    private var relay: CurrentValueRelay<String>?
+    private var relay: CurrentValueRelay<String>!
     private var values = [String]()
-    private var subscriptions = Set<AnyCancellable>()
+    private var subscriptions = CombineCancellable()
     
     // MARK: - Base Class
     
     override func setUp() {
         super.setUp()
         
-        relay = CurrentValueRelay("initial")
+        relay = .init("initial")
         subscriptions = .init()
         values = []
     }
@@ -23,29 +23,30 @@ final class CurrentValueRelayTests: XCTestCase {
     // MARK: - Tests
     
     func test_valueGetter() {
-        XCTAssertEqual(relay?.value, "initial")
+        XCTAssertEqual(relay.value, "initial")
         
-        relay?.accept("second")
-        XCTAssertEqual(relay?.value, "second")
+        relay.accept("second")
+        XCTAssertEqual(relay.value, "second")
         
-        relay?.accept("third")
-        XCTAssertEqual(relay?.value, "third")
+        relay.accept("third")
+        XCTAssertEqual(relay.value, "third")
     }
     
     func test_finishesOnDeinit() {
         var completed = false
         
-        relay?
+        relay
             .sink(
                 receiveCompletion: { _ in completed = true },
                 receiveValue: { _ in }
             )
-            .store(in: &subscriptions)
+            .store(in: subscriptions)
         
-        XCTAssertEqual(relay?.value, "initial")
+        XCTAssertEqual(relay.value, "initial")
         XCTAssertFalse(completed)
         
         relay = nil
+
         XCTAssertTrue(completed)
     }
     
@@ -54,8 +55,8 @@ final class CurrentValueRelayTests: XCTestCase {
         var count = 0
         
         voidRelay
-            .sink(receiveValue: { count += 1 })
-            .store(in: &subscriptions)
+            .sink { count += 1 }
+            .store(in: subscriptions)
         
         voidRelay.accept()
         voidRelay.accept()
@@ -67,33 +68,36 @@ final class CurrentValueRelayTests: XCTestCase {
     }
     
     func test_replaysCurrentValue() {
-        relay?
-            .sink(receiveValue: { self.values.append($0) })
-            .store(in: &subscriptions)
+        relay
+            .sink { [weak self] in self?.values.append($0) }
+            .store(in: subscriptions)
         
         XCTAssertEqual(values, ["initial"])
         
-        relay?.accept("yo")
+        relay.accept("yo")
+
         XCTAssertEqual(values, ["initial", "yo"])
         
         var secondInitial: String?
-        _ = relay?.sink(receiveValue: { secondInitial = $0 })
+        _ = relay.sink { secondInitial = $0 }
+
         XCTAssertEqual(secondInitial, "yo")
     }
     
     func test_subscribePublisher() {
         var completed = false
-        relay?
+
+        relay
             .sink(
                 receiveCompletion: { _ in completed = true },
-                receiveValue: { self.values.append($0) }
+                receiveValue: { [weak self] in self?.values.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: subscriptions)
         
         ["1", "2", "3"]
             .publisher
-            .subscribe(relay!)
-            .store(in: &subscriptions)
+            .subscribe(relay)
+            .store(in: subscriptions)
         
         XCTAssertFalse(completed)
         XCTAssertEqual(values, ["initial", "1", "2", "3"])
@@ -107,13 +111,13 @@ final class CurrentValueRelayTests: XCTestCase {
         
         input
             .subscribe(output)
-            .store(in: &subscriptions)
+            .store(in: subscriptions)
         output
             .sink(
                 receiveCompletion: { _ in completed = true },
-                receiveValue: { self.values.append($0) }
+                receiveValue: { [weak self] in self?.values.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: subscriptions)
         
         input.accept("1")
         input.accept("2")
@@ -131,13 +135,13 @@ final class CurrentValueRelayTests: XCTestCase {
         
         input
             .subscribe(output)
-            .store(in: &subscriptions)
+            .store(in: subscriptions)
         output
             .sink(
                 receiveCompletion: { _ in completed = true },
-                receiveValue: { self.values.append($0) }
+                receiveValue: { [weak self] in self?.values.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: subscriptions)
         
         input.accept("1")
         input.accept("2")
@@ -178,10 +182,10 @@ final class CurrentValueRelayTests: XCTestCase {
         XCTAssertFalse(StoredObject.storedObjectReleased)
         
         container = nil
-        XCTAssertTrue(StoredObject.storedObjectReleased)
         XCTAssertNil(container)
-        XCTAssertFalse(ContainerClass.receivedCompletion)
+        XCTAssertTrue(StoredObject.storedObjectReleased)
         XCTAssertTrue(ContainerClass.receivedCancel)
+        XCTAssertFalse(ContainerClass.receivedCompletion)
     }
     
     func test_storedObjectIsDeallocated_beforeCancellables() {
@@ -215,8 +219,8 @@ final class CurrentValueRelayTests: XCTestCase {
         XCTAssertFalse(StoredObject.storedObjectReleased)
         
         container = nil
-        XCTAssertTrue(StoredObject.storedObjectReleased)
         XCTAssertNil(container)
+        XCTAssertTrue(StoredObject.storedObjectReleased)
         XCTAssertTrue(ContainerClass.receivedCompletion)
         XCTAssertFalse(ContainerClass.receivedCancel)
     }
@@ -255,9 +259,9 @@ final class CurrentValueRelayTests: XCTestCase {
         XCTAssertFalse(StoredObject2.storedObjectReleased)
         
         container = nil
+        XCTAssertNil(container)
         XCTAssertTrue(StoredObject.storedObjectReleased)
         XCTAssertTrue(StoredObject2.storedObjectReleased)
-        XCTAssertNil(container)
     }
     
     func test_bothStoredObjectsAreDeallocated_afterCancellables() {
@@ -294,14 +298,14 @@ final class CurrentValueRelayTests: XCTestCase {
         XCTAssertFalse(StoredObject2.storedObjectReleased)
         
         container = nil
+        XCTAssertNil(container)
         XCTAssertTrue(StoredObject.storedObjectReleased)
         XCTAssertTrue(StoredObject2.storedObjectReleased)
-        XCTAssertNil(container)
     }
     
 }
 
-// MARK: - StoredObject
+// MARK: - Stored Object
 
 private extension CurrentValueRelayTests {
     
