@@ -1,20 +1,22 @@
-import XCTest
 import Combine
-import CombineExtensions
+@testable import CombineExtensions
+import XCTest
 
 final class PassthroughRelayTests: XCTestCase {
     
     // MARK: - Properties
     
-    private var relay: PassthroughRelay<String>?
+    private var relay: PassthroughRelay<String>!
     private var values = [String]()
-    private var subscriptions = Set<AnyCancellable>()
+    private var cancellable = CombineCancellable()
     
     // MARK: - Base Class
     
     override func setUp() {
-        relay = PassthroughRelay<String>()
-        subscriptions = .init()
+        super.setUp()
+
+        relay = .init()
+        cancellable = .init()
         values = []
     }
     
@@ -22,39 +24,41 @@ final class PassthroughRelayTests: XCTestCase {
     
     func test_finishesOnDeinit() {
         var completed = false
-        relay?
+
+        relay
             .sink(
                 receiveCompletion: { _ in completed = true },
                 receiveValue: { _ in }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         XCTAssertFalse(completed)
+
         relay = nil
         XCTAssertTrue(completed)
     }
     
     func test_noReplay() {
-        relay?.accept("these")
-        relay?.accept("values")
-        relay?.accept("shouldnt")
-        relay?.accept("be")
-        relay?.accept("forwaded")
+        relay.accept("these")
+        relay.accept("values")
+        relay.accept("shouldnt")
+        relay.accept("be")
+        relay.accept("forwaded")
         
-        relay?
-            .sink(receiveValue: { self.values.append($0) })
-            .store(in: &subscriptions)
+        relay
+            .sink { [weak self] in self?.values.append($0) }
+            .store(in: cancellable)
         
         XCTAssertEqual(values, [])
         
-        relay?.accept("yo")
+        relay.accept("yo")
         XCTAssertEqual(values, ["yo"])
         
-        relay?.accept("sup")
+        relay.accept("sup")
         XCTAssertEqual(values, ["yo", "sup"])
         
         var secondInitial: String?
-        _ = relay?.sink(receiveValue: { secondInitial = $0 })
+        _ = relay.sink { secondInitial = $0 }
         XCTAssertNil(secondInitial)
     }
     
@@ -63,8 +67,8 @@ final class PassthroughRelayTests: XCTestCase {
         var count = 0
         
         voidRelay
-            .sink(receiveValue: { count += 1 })
-            .store(in: &subscriptions)
+            .sink { count += 1 }
+            .store(in: cancellable)
         
         voidRelay.accept()
         voidRelay.accept()
@@ -77,17 +81,18 @@ final class PassthroughRelayTests: XCTestCase {
     
     func test_subscribePublisher() {
         var completed = false
-        relay?
+
+        relay
             .sink(
                 receiveCompletion: { _ in completed = true },
-                receiveValue: { self.values.append($0) }
+                receiveValue: { [weak self] in self?.values.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         ["1", "2", "3"]
             .publisher
-            .subscribe(relay!)
-            .store(in: &subscriptions)
+            .subscribe(relay)
+            .store(in: cancellable)
         
         XCTAssertFalse(completed)
         XCTAssertEqual(values, ["1", "2", "3"])
@@ -101,13 +106,13 @@ final class PassthroughRelayTests: XCTestCase {
         
         input
             .subscribe(output)
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         output
             .sink(
                 receiveCompletion: { _ in completed = true },
-                receiveValue: { self.values.append($0) }
+                receiveValue: { [weak self] in self?.values.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         input.accept("1")
         input.accept("2")
@@ -125,13 +130,13 @@ final class PassthroughRelayTests: XCTestCase {
         
         input
             .subscribe(output)
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         output
             .sink(
                 receiveCompletion: { _ in completed = true },
-                receiveValue: { self.values.append($0) }
+                receiveValue: { [weak self] in self?.values.append($0) }
             )
-            .store(in: &subscriptions)
+            .store(in: cancellable)
         
         input.accept("1")
         input.accept("2")
